@@ -8,6 +8,7 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "lint": "eslint .",
+    "test": "node --test dist",
     "format": "prettier --write ."
   },
   "dependencies": {
@@ -21,9 +22,11 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/node": "^22.13.9",
+    "@types/supertest": "^6.0.3",
     "eslint": "^9.22.0",
     "nodemon": "^3.1.9",
     "prettier": "^3.5.3",
+    "supertest": "^7.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"
   }

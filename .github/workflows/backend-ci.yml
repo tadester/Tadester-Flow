@@ -1,0 +1,60 @@
+name: Backend CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+
+jobs:
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Build project
+        run: npm run build
+
+      - name: Run tests
+        run: npm test
+
+  cd:
+    name: CD
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Trigger deploy webhook
+        run: |
+          # This webhook is expected to notify the hosting provider (e.g., Render or Railway) to:
+          # - pull latest code or image
+          # - rebuild container
+          # - redeploy backend service
+          curl -X POST "${{ secrets.BACKEND_DEPLOY_HOOK }}"
