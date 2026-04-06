@@ -1,10 +1,21 @@
+import { Footer } from "@/components/layout/Footer";
+import { Navbar } from "@/components/layout/Navbar";
+import { Features } from "@/components/sections/Features";
+import { Hero } from "@/components/sections/Hero";
+import { OperatorQuote } from "@/components/sections/OperatorQuote";
+import { WaitlistSection } from "@/components/sections/WaitlistSection";
+
 export default function HomePage() {
   return (
-    <main className="min-h-screen p-8">
-      <h1 className="text-3xl font-semibold">Tadester Ops</h1>
-      <p className="mt-4 text-sm text-neutral-600">
-        Landing page scaffold ready for Phase 1.
-      </p>
-    </main>
+    <>
+      <Navbar />
+      <main>
+        <Hero />
+        <WaitlistSection />
+        <Features />
+        <OperatorQuote />
+      </main>
+      <Footer />
+    </>
   );
 }
