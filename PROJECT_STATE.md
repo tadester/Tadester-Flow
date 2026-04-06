@@ -36,6 +36,7 @@
 - Routing section now uses `routing-map.png` as its source asset
 - Routing visual has been simplified to a clean image-only presentation
 - Root `netlify.toml` is configured to build from the `landing-page` subdirectory with the Next.js Netlify plugin
+- Marketing copy no longer positions the product as Edmonton-only and now speaks to field teams worldwide
 
 ## Remaining Setup
 

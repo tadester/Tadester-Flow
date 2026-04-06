@@ -16,7 +16,7 @@ export function OperatorQuote() {
               />
             </div>
             <div>
-              <span className="eyebrow">Built for teams in Edmonton</span>
+              <span className="eyebrow">Built for field teams worldwide</span>
               <blockquote className="mt-3 max-w-2xl text-[1.85rem] italic leading-[1.45] text-zinc-800">
                 “We understand the unique challenges of field operations in
                 harsh climates. Tadester Ops is built by operators, for
