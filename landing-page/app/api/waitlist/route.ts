@@ -10,7 +10,7 @@ import type {
   WaitlistSubmissionPayload,
 } from "@/types/waitlist";
 
-const WAITLIST_TABLE = "waitlist_submissions";
+const WAITLIST_TABLE = "waitlist";
 
 function invalidInputResponse(fieldErrors?: WaitlistValidationErrors) {
   return NextResponse.json<WaitlistResponse>(
