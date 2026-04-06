@@ -35,6 +35,7 @@
 - Site metadata icon is now set from the supplied image assets
 - Routing section now uses `routing-map.png` as its source asset
 - Routing visual has been simplified to a clean image-only presentation
+- Root `netlify.toml` is configured to build from the `landing-page` subdirectory with the Next.js Netlify plugin
 
 ## Remaining Setup
 
