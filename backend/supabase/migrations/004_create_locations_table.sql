@@ -1,0 +1,22 @@
+create table if not exists public.locations (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references public.organizations (id) on delete restrict,
+  name text not null,
+  address_line_1 text not null,
+  address_line_2 text,
+  city text not null,
+  region text not null,
+  postal_code text not null,
+  country text not null,
+  latitude numeric(9, 6) not null,
+  longitude numeric(9, 6) not null,
+  geofence_radius_meters integer not null,
+  status public.location_status not null default 'active',
+  created_by uuid references public.profiles (id) on delete set null,
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now()),
+  constraint locations_name_not_blank check (btrim(name) <> ''),
+  constraint locations_radius_positive check (geofence_radius_meters > 0),
+  constraint locations_latitude_range check (latitude between -90 and 90),
+  constraint locations_longitude_range check (longitude between -180 and 180)
+);

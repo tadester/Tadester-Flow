@@ -1,0 +1,8 @@
+project_id = "tadester-ops-mvp"
+
+[db]
+major_version = 15
+
+[db.seed]
+enabled = true
+sql_paths = ["./migrations/015_seed_mvp_data.sql"]

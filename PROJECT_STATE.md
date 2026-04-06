@@ -3,7 +3,7 @@
 ## Repository Layout
 
 - `landing-page/`: Next.js App Router marketing site and waitlist flow
-- `backend/`: Reserved for future Node.js and Docker services
+- `backend/`: Backend workspace, including the Phase 2 Supabase schema area
 - `mobile-app/`: Existing Flutter application
 
 ## Current Phase
@@ -13,7 +13,8 @@
 - Waitlist form UI and validation added
 - Waitlist API route connected to the live Supabase waitlist table
 - Privacy, Terms, and custom 404 pages added
-- Backend scaffold reserved
+- Backend Supabase workspace initialized for Phase 2 database architecture
+- Phase 2 MVP operational migration set scaffolded under `backend/supabase`
 
 ## Landing Page Status
 
@@ -37,8 +38,10 @@
 - Routing visual has been simplified to a clean image-only presentation
 - Root `netlify.toml` is configured to build from the `landing-page` subdirectory with the Next.js Netlify plugin
 - Marketing copy no longer positions the product as Edmonton-only and now speaks to field teams worldwide
+- Phase 2 seed data has been hardened for safer reruns of demo pings, events, and waitlist leads
 
 ## Remaining Setup
 
 - Install `landing-page` dependencies
 - Run local verification for `npm run build` and linting
+- Run the new backend Supabase migrations against a project and verify seed/RLS behavior

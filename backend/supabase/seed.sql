@@ -1,0 +1,3 @@
+-- Seed entrypoint for the backend-owned Tadester Ops Supabase workspace.
+-- The active MVP seed data lives in:
+--   migrations/015_seed_mvp_data.sql
