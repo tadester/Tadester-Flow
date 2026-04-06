@@ -15,6 +15,10 @@
 - Privacy, Terms, and custom 404 pages added
 - Backend Supabase workspace initialized for Phase 2 database architecture
 - Phase 2 MVP operational migration set scaffolded under `backend/supabase`
+- Phase 3 backend Node.js + TypeScript scaffold created on its own branch
+- Phase 3 Docker and docker-compose scaffolding added for backend local container runs
+- Phase 3 backend GitHub Actions CI/CD workflow added with backend-only path filtering
+- Phase 3 backend now includes real health and config tests instead of a no-op test script
 
 ## Landing Page Status
 
@@ -45,3 +49,5 @@
 - Install `landing-page` dependencies
 - Run local verification for `npm run build` and linting
 - Run the new backend Supabase migrations against a project and verify seed/RLS behavior
+- Install backend dependencies and verify `npm run build`, `npm run dev`, and `/api/health`
+- Verify `docker compose up --build` locally against the new backend container setup
