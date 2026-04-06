@@ -6,6 +6,11 @@ export const metadata: Metadata = {
   description:
     "Tadester Ops helps rugged field teams cut fuel costs with smarter routing and real-time crew visibility.",
   applicationName: "Tadester Ops",
+  icons: {
+    icon: "/images/OPSv2.png",
+    shortcut: "/images/OPSv2.png",
+    apple: "/images/OPSv2.png",
+  },
   keywords: [
     "field operations",
     "routing",
