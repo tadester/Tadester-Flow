@@ -1,11 +1,19 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export function Navbar() {
   return (
     <header className="border-b border-zinc-200/80 bg-white/90 backdrop-blur">
       <div className="container flex min-h-16 items-center justify-between gap-4 py-3">
-        <Link href="/" className="text-xl font-semibold tracking-tight text-zinc-950">
-          <span className="font-bold">Tadester</span> Ops
+        <Link href="/" className="flex items-center gap-3 text-zinc-950">
+          <Image
+            src="/images/OPS.png"
+            alt="Tadester Ops"
+            width={144}
+            height={36}
+            priority
+            className="h-8 w-auto sm:h-9"
+          />
         </Link>
         <a
           href="#waitlist"
