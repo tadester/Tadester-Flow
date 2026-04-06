@@ -19,6 +19,7 @@
 - Phase 3 Docker and docker-compose scaffolding added for backend local container runs
 - Phase 3 backend GitHub Actions CI/CD workflow added with backend-only path filtering
 - Phase 3 backend now includes real health and config tests instead of a no-op test script
+- Phase 4 API surface branch now includes modular routes, controllers, services, auth middleware, and Zod validation for jobs, locations, assignments, and worker status
 
 ## Landing Page Status
 
@@ -49,5 +50,6 @@
 - Install `landing-page` dependencies
 - Run local verification for `npm run build` and linting
 - Run the new backend Supabase migrations against a project and verify seed/RLS behavior
-- Install backend dependencies and verify `npm run build`, `npm run dev`, and `/api/health`
+- Configure backend env values including `SUPABASE_SERVICE_ROLE_KEY` in local/dev and hosting environments
+- Verify Phase 4 endpoints against a live Supabase project with real JWTs and role-aware access
 - Verify `docker compose up --build` locally against the new backend container setup

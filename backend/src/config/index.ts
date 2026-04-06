@@ -22,4 +22,5 @@ if (Number.isNaN(port)) {
 export const config = {
   port,
   supabaseUrl: requireEnv("SUPABASE_URL"),
+  supabaseServiceRoleKey: requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
 } as const;
