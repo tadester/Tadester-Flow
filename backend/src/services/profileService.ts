@@ -2,7 +2,7 @@ import { NotFoundError } from "../utils/errors";
 import { handleSupabaseError } from "../utils/supabaseErrors";
 import { supabaseAdmin } from "./supabaseService";
 
-type ProfileRecord = {
+export type ProfileRecord = {
   id: string;
   email: string;
   role: "admin" | "dispatcher" | "operator" | "field_worker";
@@ -21,9 +21,20 @@ export async function getProfileById(profileId: string): Promise<ProfileRecord> 
     handleSupabaseError(error, "Failed to fetch profile.");
   }
 
-  if (!data || data.status !== "active") {
-    throw new NotFoundError("Active profile not found.");
+  if (!data) {
+    throw new NotFoundError("Profile not found.");
   }
 
   return data;
+}
+
+export async function updateProfileStatus(profileId: string, status: "active" | "inactive") {
+  const { error } = await supabaseAdmin
+    .from("profiles")
+    .update({ status })
+    .eq("id", profileId);
+
+  if (error) {
+    handleSupabaseError(error, "Failed to update profile status.");
+  }
 }

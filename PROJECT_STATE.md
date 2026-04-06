@@ -20,6 +20,9 @@
 - Phase 3 backend GitHub Actions CI/CD workflow added with backend-only path filtering
 - Phase 3 backend now includes real health and config tests instead of a no-op test script
 - Phase 4 API surface branch now includes modular routes, controllers, services, auth middleware, and Zod validation for jobs, locations, assignments, and worker status
+- Phase 4 now also includes a standalone Google Maps-based `RoutingService` for daily worker ETAs with safe fallback behavior
+- Phase 4 now also includes a standalone `GeofenceService` with Haversine distance checks, transition-based event creation, and ping accuracy filtering
+- Phase 4 now includes the worker tracking ingestion pipeline, async geofence triggering, and scheduled stale-worker inactivity checks
 
 ## Landing Page Status
 
@@ -51,5 +54,6 @@
 - Run local verification for `npm run build` and linting
 - Run the new backend Supabase migrations against a project and verify seed/RLS behavior
 - Configure backend env values including `SUPABASE_SERVICE_ROLE_KEY` in local/dev and hosting environments
+- Add a real `GOOGLE_MAPS_API_KEY` in backend environments before using route ETA calculations
 - Verify Phase 4 endpoints against a live Supabase project with real JWTs and role-aware access
 - Verify `docker compose up --build` locally against the new backend container setup

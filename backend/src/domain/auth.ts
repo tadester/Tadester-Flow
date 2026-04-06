@@ -5,6 +5,7 @@ export type AuthenticatedUser = {
   email: string;
   role: AppRole;
   organizationId: string;
+  status: "active" | "inactive";
 };
 
 export type JwtClaims = {

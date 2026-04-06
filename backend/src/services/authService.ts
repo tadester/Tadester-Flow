@@ -24,5 +24,6 @@ export async function authenticateToken(token: string): Promise<AuthenticatedUse
     email: profile.email,
     role: profile.role,
     organizationId: profile.organization_id,
+    status: profile.status,
   };
 }
