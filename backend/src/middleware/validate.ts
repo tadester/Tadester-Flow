@@ -1,8 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
-import type { ZodType } from "zod";
+import type { ZodType, ZodTypeDef } from "zod";
 import { ZodError } from "zod";
 
-export function validateBody<T>(schema: ZodType<T>) {
+export function validateBody<T>(schema: ZodType<T, ZodTypeDef, unknown>) {
   return (
     request: Request,
     response: Response,
