@@ -89,9 +89,19 @@ class _JobsListScreenState extends ConsumerState<JobsListScreen> {
           child: jobsAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (Object error, StackTrace stackTrace) => Center(
-              child: Text(
-                'Unable to load jobs.\n$error',
-                textAlign: TextAlign.center,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(
+                    'Unable to load jobs.\n$error',
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  FilledButton(
+                    onPressed: () => ref.invalidate(jobsProvider),
+                    child: const Text('Try again'),
+                  ),
+                ],
               ),
             ),
             data: (List<Job> jobs) {

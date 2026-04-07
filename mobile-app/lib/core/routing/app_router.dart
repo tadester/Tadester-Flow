@@ -6,12 +6,14 @@ import '../../features/auth/presentation/screens/sign_up_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/jobs/presentation/screens/job_detail_screen.dart';
 import '../../features/jobs/presentation/screens/jobs_list_screen.dart';
+import '../../features/profile/presentation/screens/workspace_screen.dart';
 import '../../features/tracking/presentation/screens/location_permission_screen.dart';
 
 enum AppRoute {
   splash('splash'),
   login('login'),
   signUp('sign-up'),
+  workspace('workspace'),
   jobs('jobs'),
   jobDetail('job-detail'),
   permissions('permissions');
@@ -41,6 +43,11 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
         builder: (context, state) => const SignUpScreen(),
       ),
       GoRoute(
+        path: '/workspace',
+        name: AppRoute.workspace.nameValue,
+        builder: (context, state) => const WorkspaceScreen(),
+      ),
+      GoRoute(
         path: '/jobs',
         name: AppRoute.jobs.nameValue,
         builder: (context, state) => const JobsListScreen(),
@@ -59,7 +66,6 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
         builder: (context, state) => const LocationPermissionScreen(),
       ),
     ],
-    // Hook reserved for future auth-based redirect logic.
     redirect: (context, state) => null,
   );
 });

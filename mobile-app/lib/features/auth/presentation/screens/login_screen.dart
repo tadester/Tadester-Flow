@@ -49,7 +49,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         return;
       }
 
-      context.goNamed(AppRoute.jobs.nameValue);
+      context.goNamed(AppRoute.workspace.nameValue);
     } on AuthException catch (error) {
       setState(() {
         _errorMessage = _friendlyMessage(error);
@@ -136,7 +136,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Use your Supabase-backed account to access assigned jobs.',
+                      'Admins land in the operations dashboard. Workers land in their assigned jobs view.',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 24),
