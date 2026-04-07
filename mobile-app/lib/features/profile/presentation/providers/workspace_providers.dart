@@ -36,6 +36,14 @@ final FutureProvider<WorkerRouteSummary> workerRouteProvider =
           .getMyRoute(date: _todayIsoDate());
     });
 
+void invalidateWorkspaceData(WidgetRef ref) {
+  ref.invalidate(workspaceProvider);
+  ref.invalidate(employeesProvider);
+  ref.invalidate(workspaceLocationsProvider);
+  ref.invalidate(workspaceJobsProvider);
+  ref.invalidate(workerRouteProvider);
+}
+
 String _todayIsoDate() {
   final DateTime now = DateTime.now();
   final String year = now.year.toString().padLeft(4, '0');

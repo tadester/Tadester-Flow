@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../auth/presentation/providers/auth_state_provider.dart';
 import '../../domain/models/workspace_models.dart';
+import '../providers/workspace_providers.dart';
 
 enum WorkerTab { jobs, route, settings }
 
@@ -39,6 +40,7 @@ class WorkerShell extends ConsumerWidget {
           IconButton(
             onPressed: () async {
               await ref.read(authRepositoryProvider).signOut();
+              invalidateWorkspaceData(ref);
               if (context.mounted) {
                 context.goNamed(AppRoute.login.nameValue);
               }

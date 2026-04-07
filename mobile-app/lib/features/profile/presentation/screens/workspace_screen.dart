@@ -77,6 +77,7 @@ class WorkspaceScreen extends ConsumerWidget {
                       child: OutlinedButton(
                         onPressed: () async {
                           await ref.read(authRepositoryProvider).signOut();
+                          invalidateWorkspaceData(ref);
                           if (context.mounted) {
                             context.goNamed(AppRoute.login.nameValue);
                           }

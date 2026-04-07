@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/routing/app_router.dart';
 import '../providers/auth_state_provider.dart';
+import '../../../profile/presentation/providers/workspace_providers.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -44,6 +45,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await ref
           .read(authRepositoryProvider)
           .signIn(_emailController.text.trim(), _passwordController.text);
+      invalidateWorkspaceData(ref);
 
       if (!mounted) {
         return;
@@ -57,6 +59,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } catch (_) {
       setState(() {
         _errorMessage = 'Unable to sign in right now. Please try again.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _signOutCurrentSession() async {
+    setState(() {
+      _isSubmitting = true;
+      _errorMessage = null;
+      _infoMessage = null;
+    });
+
+    try {
+      await ref.read(authRepositoryProvider).signOut();
+      invalidateWorkspaceData(ref);
+      setState(() {
+        _infoMessage = 'Signed out. You can log in with another account now.';
+      });
+    } catch (_) {
+      setState(() {
+        _errorMessage = 'Unable to sign out right now. Please try again.';
       });
     } finally {
       if (mounted) {
@@ -117,6 +145,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final AsyncValue<User?> authState = ref.watch(authStateProvider);
+    final User? currentUser = authState.asData?.value;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Login')),
       body: SafeArea(
@@ -139,6 +170,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       'Admins land in the operations dashboard. Workers land in their assigned jobs view.',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
+                    if (currentUser != null) ...<Widget>[
+                      const SizedBox(height: 20),
+                      Card(
+                        color: const Color(0xFFFFF4F4),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              const Text('Current session detected'),
+                              const SizedBox(height: 8),
+                              Text(currentUser.email ?? 'Unknown account'),
+                              const SizedBox(height: 12),
+                              OutlinedButton.icon(
+                                onPressed: _isSubmitting ? null : _signOutCurrentSession,
+                                icon: const Icon(Icons.logout),
+                                label: const Text('Sign out first'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 24),
                     TextFormField(
                       controller: _emailController,
