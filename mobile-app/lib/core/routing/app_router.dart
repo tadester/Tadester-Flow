@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/screens/login_screen.dart';
+import '../../features/auth/presentation/screens/sign_up_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/jobs/presentation/screens/job_detail_screen.dart';
 import '../../features/jobs/presentation/screens/jobs_list_screen.dart';
@@ -10,6 +11,7 @@ import '../../features/tracking/presentation/screens/location_permission_screen.
 enum AppRoute {
   splash('splash'),
   login('login'),
+  signUp('sign-up'),
   jobs('jobs'),
   jobDetail('job-detail'),
   permissions('permissions');
@@ -32,6 +34,11 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
         path: '/login',
         name: AppRoute.login.nameValue,
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/signup',
+        name: AppRoute.signUp.nameValue,
+        builder: (context, state) => const SignUpScreen(),
       ),
       GoRoute(
         path: '/jobs',

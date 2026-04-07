@@ -208,6 +208,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       onPressed: _isSubmitting ? null : _resetPassword,
                       child: const Text('Forgot Password?'),
                     ),
+                    TextButton(
+                      onPressed: _isSubmitting
+                          ? null
+                          : () => context.goNamed(AppRoute.signUp.nameValue),
+                      child: const Text('Create an account'),
+                    ),
                   ],
                 ),
               ),
