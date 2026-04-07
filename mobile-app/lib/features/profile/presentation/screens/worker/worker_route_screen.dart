@@ -6,11 +6,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../../core/config/env.dart';
 import '../../../../../core/routing/app_router.dart';
 import '../../../../../core/services/location_service.dart';
 import '../../../../tracking/presentation/providers/location_service_provider.dart';
 import '../../../domain/models/workspace_models.dart';
 import '../../providers/workspace_providers.dart';
+import '../../widgets/worker_route_map.dart';
 import '../../widgets/worker_shell.dart';
 
 class WorkerRouteScreen extends ConsumerStatefulWidget {
@@ -178,6 +180,8 @@ class _WorkerRouteScreenState extends ConsumerState<WorkerRouteScreen> {
               ),
               data: (route) {
                 final nextStop = route.nextStop;
+                final liveLocation = locationAsync.asData?.value;
+
                 if (nextStop == null) {
                   return const Card(
                     child: Padding(
@@ -189,6 +193,22 @@ class _WorkerRouteScreenState extends ConsumerState<WorkerRouteScreen> {
 
                 return Column(
                   children: <Widget>[
+                    if (!Env.hasGoogleMapsKey)
+                      Card(
+                        color: const Color(0xFFFFF4F4),
+                        child: const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Text(
+                            'Google Maps is not fully configured yet. Add GOOGLE_MAPS_API_KEY to mobile-app/.env, Android local.properties, and the iOS xcconfig files to render the in-app map.',
+                          ),
+                        ),
+                      )
+                    else
+                      WorkerRouteMap(
+                        route: route,
+                        currentLocation: liveLocation,
+                      ),
+                    const SizedBox(height: 12),
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
