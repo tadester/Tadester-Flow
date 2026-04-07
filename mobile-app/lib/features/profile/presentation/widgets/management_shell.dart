@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/routing/app_router.dart';
-import '../../../auth/presentation/providers/auth_state_provider.dart';
 import '../../domain/models/workspace_models.dart';
-import '../providers/workspace_providers.dart';
 
 enum ManagementTab { overview, jobs, workers, settings }
 
-class ManagementShell extends ConsumerWidget {
+class ManagementShell extends StatelessWidget {
   const ManagementShell({
     required this.workspace,
     required this.currentTab,
@@ -26,7 +23,7 @@ class ManagementShell extends ConsumerWidget {
   final VoidCallback? onRefresh;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(workspace.organization.name),
@@ -37,17 +34,6 @@ class ManagementShell extends ConsumerWidget {
               icon: const Icon(Icons.refresh),
               tooltip: 'Refresh',
             ),
-          IconButton(
-            onPressed: () async {
-              await ref.read(authRepositoryProvider).signOut();
-              invalidateWorkspaceData(ref);
-              if (context.mounted) {
-                context.goNamed(AppRoute.login.nameValue);
-              }
-            },
-            icon: const Icon(Icons.logout),
-            tooltip: 'Log out',
-          ),
         ],
       ),
       body: SafeArea(
@@ -81,13 +67,25 @@ class ManagementShell extends ConsumerWidget {
         onDestinationSelected: (int index) {
           switch (ManagementTab.values[index]) {
             case ManagementTab.overview:
-              context.goNamed(AppRoute.managerOverview.nameValue);
+              context.goNamed(
+                AppRoute.managerOverview.nameValue,
+                extra: currentTab.index,
+              );
             case ManagementTab.jobs:
-              context.goNamed(AppRoute.managerJobs.nameValue);
+              context.goNamed(
+                AppRoute.managerJobs.nameValue,
+                extra: currentTab.index,
+              );
             case ManagementTab.workers:
-              context.goNamed(AppRoute.managerWorkers.nameValue);
+              context.goNamed(
+                AppRoute.managerWorkers.nameValue,
+                extra: currentTab.index,
+              );
             case ManagementTab.settings:
-              context.goNamed(AppRoute.managerSettings.nameValue);
+              context.goNamed(
+                AppRoute.managerSettings.nameValue,
+                extra: currentTab.index,
+              );
           }
         },
       ),

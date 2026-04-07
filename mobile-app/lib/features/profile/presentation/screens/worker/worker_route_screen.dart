@@ -3,11 +3,9 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../../core/config/env.dart';
-import '../../../../../core/routing/app_router.dart';
 import '../../../../../core/services/location_service.dart';
 import '../../../../tracking/presentation/providers/location_service_provider.dart';
 import '../../../domain/models/workspace_models.dart';
@@ -23,8 +21,6 @@ class WorkerRouteScreen extends ConsumerStatefulWidget {
 }
 
 class _WorkerRouteScreenState extends ConsumerState<WorkerRouteScreen> {
-  bool _startingTracking = false;
-
   @override
   void initState() {
     super.initState();
@@ -40,32 +36,6 @@ class _WorkerRouteScreenState extends ConsumerState<WorkerRouteScreen> {
     if (permission == LocationPermissionState.granted) {
       await locationService.startTracking();
       await ref.read(trackingSyncServiceProvider).start();
-    }
-  }
-
-  Future<void> _startTracking() async {
-    setState(() {
-      _startingTracking = true;
-    });
-
-    try {
-      final locationService = ref.read(locationServiceProvider);
-      final permission = await locationService.getPermissionState();
-      if (permission != LocationPermissionState.granted) {
-        if (mounted) {
-          context.goNamed(AppRoute.permissions.nameValue);
-        }
-        return;
-      }
-
-      await locationService.startTracking();
-      await ref.read(trackingSyncServiceProvider).start();
-    } finally {
-      if (mounted) {
-        setState(() {
-          _startingTracking = false;
-        });
-      }
     }
   }
 
@@ -143,22 +113,8 @@ class _WorkerRouteScreenState extends ConsumerState<WorkerRouteScreen> {
                           Text('Live location unavailable: $error'),
                     ),
                     const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
-                      children: <Widget>[
-                        ElevatedButton.icon(
-                          onPressed: _startingTracking ? null : _startTracking,
-                          icon: const Icon(Icons.play_arrow),
-                          label: const Text('Start live tracking'),
-                        ),
-                        OutlinedButton.icon(
-                          onPressed: () =>
-                              context.goNamed(AppRoute.permissions.nameValue),
-                          icon: const Icon(Icons.security),
-                          label: const Text('Permissions'),
-                        ),
-                      ],
+                    const Text(
+                      'Manage live tracking permissions and logout from the Settings tab. Use the jobs tab to open the full details for each stop.',
                     ),
                   ],
                 ),

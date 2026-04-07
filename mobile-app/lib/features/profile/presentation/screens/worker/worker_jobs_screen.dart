@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../../core/routing/app_router.dart';
 import '../../providers/workspace_providers.dart';
 import '../../widgets/worker_shell.dart';
 
@@ -51,6 +53,10 @@ class WorkerJobsScreen extends ConsumerWidget {
                     (job) => Card(
                       margin: const EdgeInsets.only(bottom: 12),
                       child: ListTile(
+                        onTap: () => context.pushNamed(
+                          AppRoute.jobDetail.nameValue,
+                          pathParameters: <String, String>{'id': job.id},
+                        ),
                         title: Text(job.title),
                         subtitle: Text(
                           '${job.locationName} · ${_formatDateTime(job.scheduledStartAt)}',

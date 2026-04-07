@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/routing/app_router.dart';
-import '../../../auth/presentation/providers/auth_state_provider.dart';
 import '../../domain/models/workspace_models.dart';
-import '../providers/workspace_providers.dart';
 
 enum WorkerTab { jobs, route, settings }
 
-class WorkerShell extends ConsumerWidget {
+class WorkerShell extends StatelessWidget {
   const WorkerShell({
     required this.workspace,
     required this.currentTab,
@@ -26,7 +23,7 @@ class WorkerShell extends ConsumerWidget {
   final VoidCallback? onRefresh;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(workspace.organization.name),
@@ -37,17 +34,6 @@ class WorkerShell extends ConsumerWidget {
               icon: const Icon(Icons.refresh),
               tooltip: 'Refresh',
             ),
-          IconButton(
-            onPressed: () async {
-              await ref.read(authRepositoryProvider).signOut();
-              invalidateWorkspaceData(ref);
-              if (context.mounted) {
-                context.goNamed(AppRoute.login.nameValue);
-              }
-            },
-            icon: const Icon(Icons.logout),
-            tooltip: 'Log out',
-          ),
         ],
       ),
       body: SafeArea(
@@ -78,11 +64,20 @@ class WorkerShell extends ConsumerWidget {
         onDestinationSelected: (int index) {
           switch (WorkerTab.values[index]) {
             case WorkerTab.jobs:
-              context.goNamed(AppRoute.workerJobs.nameValue);
+              context.goNamed(
+                AppRoute.workerJobs.nameValue,
+                extra: currentTab.index,
+              );
             case WorkerTab.route:
-              context.goNamed(AppRoute.workerRoute.nameValue);
+              context.goNamed(
+                AppRoute.workerRoute.nameValue,
+                extra: currentTab.index,
+              );
             case WorkerTab.settings:
-              context.goNamed(AppRoute.workerSettings.nameValue);
+              context.goNamed(
+                AppRoute.workerSettings.nameValue,
+                extra: currentTab.index,
+              );
           }
         },
       ),

@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/theme/app_theme.dart';
-import '../../../../core/utils/date_time_formatter.dart';
-import '../../../../shared/models/job.dart';
-import '../providers/jobs_provider.dart';
+import '../../../profile/domain/models/workspace_models.dart';
+import '../../../profile/presentation/providers/workspace_providers.dart';
 
 class JobDetailScreen extends ConsumerWidget {
   const JobDetailScreen({super.key, required this.jobId});
@@ -13,7 +11,9 @@ class JobDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<List<Job>> jobsAsync = ref.watch(jobsProvider);
+    final AsyncValue<List<WorkspaceJobRecord>> jobsAsync = ref.watch(
+      workspaceJobsProvider,
+    );
 
     return Scaffold(
       appBar: AppBar(title: const Text('Job Detail')),
@@ -28,9 +28,9 @@ class JobDetailScreen extends ConsumerWidget {
                 textAlign: TextAlign.center,
               ),
             ),
-            data: (List<Job> jobs) {
-              Job? selectedJob;
-              for (final Job job in jobs) {
+            data: (List<WorkspaceJobRecord> jobs) {
+              WorkspaceJobRecord? selectedJob;
+              for (final WorkspaceJobRecord job in jobs) {
                 if (job.id == jobId) {
                   selectedJob = job;
                   break;
@@ -44,8 +44,7 @@ class JobDetailScreen extends ConsumerWidget {
               return Card(
                 child: Padding(
                   padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: ListView(
                     children: <Widget>[
                       Text(
                         selectedJob.title,
@@ -59,16 +58,34 @@ class JobDetailScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 12),
                       _DetailRow(
+                        label: 'Priority',
+                        value: selectedJob.priority,
+                      ),
+                      const SizedBox(height: 12),
+                      _DetailRow(
                         label: 'Location',
                         value: selectedJob.locationName,
                       ),
                       const SizedBox(height: 12),
                       _DetailRow(
-                        label: 'Scheduled',
-                        value: DateTimeFormatter.format(
-                          selectedJob.scheduledAt,
-                        ),
+                        label: 'Scheduled start',
+                        value: _formatDateTime(selectedJob.scheduledStartAt),
                       ),
+                      const SizedBox(height: 12),
+                      _DetailRow(
+                        label: 'Scheduled end',
+                        value: _formatDateTime(selectedJob.scheduledEndAt),
+                      ),
+                      if (selectedJob.description != null &&
+                          selectedJob.description!
+                              .trim()
+                              .isNotEmpty) ...<Widget>[
+                        const SizedBox(height: 12),
+                        _DetailRow(
+                          label: 'Description',
+                          value: selectedJob.description!,
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -78,6 +95,15 @@ class JobDetailScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  static String _formatDateTime(DateTime value) {
+    final String year = value.year.toString().padLeft(4, '0');
+    final String month = value.month.toString().padLeft(2, '0');
+    final String day = value.day.toString().padLeft(2, '0');
+    final String hour = value.hour.toString().padLeft(2, '0');
+    final String minute = value.minute.toString().padLeft(2, '0');
+    return '$year-$month-$day $hour:$minute';
   }
 }
 
@@ -102,7 +128,9 @@ class _DetailRow extends StatelessWidget {
         Text(
           value,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: emphasize ? AppTheme.primaryColor : Colors.black87,
+            color: emphasize
+                ? Theme.of(context).colorScheme.primary
+                : Colors.black87,
             fontWeight: emphasize ? FontWeight.w700 : FontWeight.w500,
           ),
         ),

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -62,37 +63,65 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
       GoRoute(
         path: '/manager/overview',
         name: AppRoute.managerOverview.nameValue,
-        builder: (context, state) => const ManagementOverviewScreen(),
+        pageBuilder: (context, state) => _buildTabPage(
+          state: state,
+          child: const ManagementOverviewScreen(),
+          currentIndex: 0,
+        ),
       ),
       GoRoute(
         path: '/manager/jobs',
         name: AppRoute.managerJobs.nameValue,
-        builder: (context, state) => const ManagementJobsScreen(),
+        pageBuilder: (context, state) => _buildTabPage(
+          state: state,
+          child: const ManagementJobsScreen(),
+          currentIndex: 1,
+        ),
       ),
       GoRoute(
         path: '/manager/workers',
         name: AppRoute.managerWorkers.nameValue,
-        builder: (context, state) => const ManagementWorkersScreen(),
+        pageBuilder: (context, state) => _buildTabPage(
+          state: state,
+          child: const ManagementWorkersScreen(),
+          currentIndex: 2,
+        ),
       ),
       GoRoute(
         path: '/manager/settings',
         name: AppRoute.managerSettings.nameValue,
-        builder: (context, state) => const ManagementSettingsScreen(),
+        pageBuilder: (context, state) => _buildTabPage(
+          state: state,
+          child: const ManagementSettingsScreen(),
+          currentIndex: 3,
+        ),
       ),
       GoRoute(
         path: '/worker/jobs',
         name: AppRoute.workerJobs.nameValue,
-        builder: (context, state) => const WorkerJobsScreen(),
+        pageBuilder: (context, state) => _buildTabPage(
+          state: state,
+          child: const WorkerJobsScreen(),
+          currentIndex: 0,
+        ),
       ),
       GoRoute(
         path: '/worker/route',
         name: AppRoute.workerRoute.nameValue,
-        builder: (context, state) => const WorkerRouteScreen(),
+        pageBuilder: (context, state) => _buildTabPage(
+          state: state,
+          child: const WorkerRouteScreen(),
+          currentIndex: 1,
+        ),
       ),
       GoRoute(
         path: '/worker/settings',
         name: AppRoute.workerSettings.nameValue,
-        builder: (context, state) => const WorkerSettingsScreen(),
+        pageBuilder: (context, state) => _buildTabPage(
+          state: state,
+          child: const WorkerSettingsScreen(),
+          currentIndex: 2,
+        ),
       ),
       GoRoute(
         path: '/jobs/:id',
@@ -109,3 +138,41 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
     redirect: (context, state) => null,
   );
 });
+
+Page<void> _buildTabPage({
+  required GoRouterState state,
+  required Widget child,
+  required int currentIndex,
+}) {
+  final int? previousIndex = state.extra is int ? state.extra as int : null;
+
+  if (previousIndex == null || previousIndex == currentIndex) {
+    return CustomTransitionPage<void>(
+      key: state.pageKey,
+      child: child,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        return FadeTransition(opacity: animation, child: child);
+      },
+    );
+  }
+
+  final Offset begin = currentIndex < previousIndex
+      ? const Offset(-1, 0)
+      : const Offset(1, 0);
+
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final Animatable<Offset> tween = Tween<Offset>(
+        begin: begin,
+        end: Offset.zero,
+      ).chain(CurveTween(curve: Curves.easeOutCubic));
+
+      return SlideTransition(
+        position: animation.drive(tween),
+        child: child,
+      );
+    },
+  );
+}
