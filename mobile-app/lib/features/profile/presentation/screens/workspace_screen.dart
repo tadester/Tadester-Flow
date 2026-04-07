@@ -7,8 +7,6 @@ import '../../../../core/services/backend_api_client.dart';
 import '../../../auth/presentation/providers/auth_state_provider.dart';
 import '../../domain/models/workspace_models.dart';
 import '../providers/workspace_providers.dart';
-import 'admin_dashboard_screen.dart';
-import 'worker_dashboard_screen.dart';
 
 class WorkspaceScreen extends ConsumerWidget {
   const WorkspaceScreen({super.key});
@@ -19,18 +17,25 @@ class WorkspaceScreen extends ConsumerWidget {
 
     return workspace.when(
       data: (WorkspaceSummary data) {
-        if (data.profile.isManagementRole) {
-          return AdminDashboardScreen(workspace: data);
-        }
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!context.mounted) {
+            return;
+          }
 
-        return WorkerDashboardScreen(workspace: data);
+          if (data.profile.isManagementRole) {
+            context.goNamed(AppRoute.managerOverview.nameValue);
+            return;
+          }
+
+          context.goNamed(AppRoute.workerJobs.nameValue);
+        });
+
+        return const Scaffold(body: Center(child: CircularProgressIndicator()));
       },
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (Object error, StackTrace stackTrace) {
-        final _WorkspaceErrorDetails details = _WorkspaceErrorDetails.fromError(
-          error,
-        );
+        final details = _WorkspaceErrorDetails.fromError(error);
 
         return Scaffold(
           appBar: AppBar(title: const Text('Workspace')),
@@ -56,10 +61,7 @@ class WorkspaceScreen extends ConsumerWidget {
                     ),
                     if (details.hint != null) ...<Widget>[
                       const SizedBox(height: 12),
-                      Text(
-                        details.hint!,
-                        textAlign: TextAlign.center,
-                      ),
+                      Text(details.hint!, textAlign: TextAlign.center),
                     ],
                     const SizedBox(height: 20),
                     SizedBox(

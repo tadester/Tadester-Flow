@@ -1,5 +1,3 @@
-import '../../../../shared/models/job.dart';
-
 class WorkspaceOrganization {
   const WorkspaceOrganization({
     required this.id,
@@ -123,6 +121,8 @@ class EmployeeRecord {
   final String role;
   final String status;
 
+  bool get isWorker => role == 'field_worker';
+
   factory EmployeeRecord.fromJson(Map<String, dynamic> json) {
     return EmployeeRecord(
       id: json['id'] as String,
@@ -170,6 +170,44 @@ class LocationRecord {
   }
 }
 
+class WorkspaceJobRecord {
+  const WorkspaceJobRecord({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.status,
+    required this.priority,
+    required this.locationId,
+    required this.locationName,
+    required this.scheduledStartAt,
+    required this.scheduledEndAt,
+  });
+
+  final String id;
+  final String title;
+  final String? description;
+  final String status;
+  final String priority;
+  final String locationId;
+  final String locationName;
+  final DateTime scheduledStartAt;
+  final DateTime scheduledEndAt;
+
+  factory WorkspaceJobRecord.fromJson(Map<String, dynamic> json) {
+    return WorkspaceJobRecord(
+      id: json['id'] as String,
+      title: json['title'] as String? ?? 'Untitled job',
+      description: json['description'] as String?,
+      status: json['status'] as String? ?? 'scheduled',
+      priority: json['priority'] as String? ?? 'medium',
+      locationId: json['location_id'] as String? ?? '',
+      locationName: json['location_name'] as String? ?? 'Unknown location',
+      scheduledStartAt: DateTime.parse(json['scheduled_start_at'] as String),
+      scheduledEndAt: DateTime.parse(json['scheduled_end_at'] as String),
+    );
+  }
+}
+
 class RouteLegSummary {
   const RouteLegSummary({
     required this.fromJobId,
@@ -199,6 +237,41 @@ class RouteLegSummary {
   }
 }
 
+class WorkerRouteStop {
+  const WorkerRouteStop({
+    required this.id,
+    required this.title,
+    required this.status,
+    required this.locationName,
+    required this.latitude,
+    required this.longitude,
+    required this.scheduledAt,
+  });
+
+  final String id;
+  final String title;
+  final String status;
+  final String locationName;
+  final double latitude;
+  final double longitude;
+  final DateTime scheduledAt;
+
+  factory WorkerRouteStop.fromJson(Map<String, dynamic> json) {
+    final Map<String, dynamic> location =
+        json['location'] as Map<String, dynamic>? ?? <String, dynamic>{};
+
+    return WorkerRouteStop(
+      id: json['id'] as String,
+      title: json['title'] as String? ?? 'Untitled stop',
+      status: json['status'] as String? ?? 'scheduled',
+      locationName: location['name'] as String? ?? 'Unknown location',
+      latitude: (location['lat'] as num?)?.toDouble() ?? 0,
+      longitude: (location['lng'] as num?)?.toDouble() ?? 0,
+      scheduledAt: DateTime.parse(json['scheduled_start_at'] as String),
+    );
+  }
+}
+
 class WorkerRouteSummary {
   const WorkerRouteSummary({
     required this.orderedJobs,
@@ -207,28 +280,19 @@ class WorkerRouteSummary {
     required this.totalTime,
   });
 
-  final List<Job> orderedJobs;
+  final List<WorkerRouteStop> orderedJobs;
   final List<RouteLegSummary> legs;
   final int totalDistance;
   final int totalTime;
 
+  WorkerRouteStop? get nextStop =>
+      orderedJobs.isEmpty ? null : orderedJobs.first;
+
   factory WorkerRouteSummary.fromJson(Map<String, dynamic> json) {
-    final List<Job> orderedJobs =
+    final List<WorkerRouteStop> orderedJobs =
         ((json['ordered_jobs'] as List?) ?? <dynamic>[])
             .whereType<Map<String, dynamic>>()
-            .map((Map<String, dynamic> item) {
-              final Map<String, dynamic> location =
-                  item['location'] as Map<String, dynamic>? ??
-                  <String, dynamic>{};
-
-              return Job.fromBackendJson(<String, dynamic>{
-                'id': item['id'],
-                'title': item['title'],
-                'status': item['status'],
-                'location_name': location['name'],
-                'scheduled_start_at': item['scheduled_start_at'],
-              });
-            })
+            .map(WorkerRouteStop.fromJson)
             .toList(growable: false);
 
     final List<RouteLegSummary> legs = ((json['legs'] as List?) ?? <dynamic>[])
@@ -241,6 +305,67 @@ class WorkerRouteSummary {
       legs: legs,
       totalDistance: json['total_distance'] as int? ?? 0,
       totalTime: json['total_time'] as int? ?? 0,
+    );
+  }
+}
+
+class AutoAssignRunResult {
+  const AutoAssignRunResult({
+    required this.assignmentsCreated,
+    required this.skippedJobs,
+  });
+
+  final List<AutoAssignedJob> assignmentsCreated;
+  final List<AutoAssignSkippedJob> skippedJobs;
+
+  factory AutoAssignRunResult.fromJson(Map<String, dynamic> json) {
+    return AutoAssignRunResult(
+      assignmentsCreated:
+          ((json['assignments_created'] as List?) ?? <dynamic>[])
+              .whereType<Map<String, dynamic>>()
+              .map(AutoAssignedJob.fromJson)
+              .toList(growable: false),
+      skippedJobs: ((json['skipped_jobs'] as List?) ?? <dynamic>[])
+          .whereType<Map<String, dynamic>>()
+          .map(AutoAssignSkippedJob.fromJson)
+          .toList(growable: false),
+    );
+  }
+}
+
+class AutoAssignedJob {
+  const AutoAssignedJob({
+    required this.jobId,
+    required this.workerProfileId,
+    required this.workerName,
+    required this.distanceMeters,
+  });
+
+  final String jobId;
+  final String workerProfileId;
+  final String workerName;
+  final int distanceMeters;
+
+  factory AutoAssignedJob.fromJson(Map<String, dynamic> json) {
+    return AutoAssignedJob(
+      jobId: json['job_id'] as String,
+      workerProfileId: json['worker_profile_id'] as String,
+      workerName: json['worker_name'] as String? ?? 'Assigned worker',
+      distanceMeters: json['distance_meters'] as int? ?? 0,
+    );
+  }
+}
+
+class AutoAssignSkippedJob {
+  const AutoAssignSkippedJob({required this.jobId, required this.reason});
+
+  final String jobId;
+  final String reason;
+
+  factory AutoAssignSkippedJob.fromJson(Map<String, dynamic> json) {
+    return AutoAssignSkippedJob(
+      jobId: json['job_id'] as String,
+      reason: json['reason'] as String? ?? 'Unknown reason',
     );
   }
 }

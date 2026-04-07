@@ -1,5 +1,4 @@
 import '../../../core/services/backend_api_client.dart';
-import '../../../shared/models/job.dart';
 import '../domain/models/workspace_models.dart';
 
 class CreateLocationInput {
@@ -139,17 +138,17 @@ class WorkspaceRepository {
         .toList(growable: false);
   }
 
-  Future<List<Job>> getJobs() async {
+  Future<List<WorkspaceJobRecord>> getJobs() async {
     final Map<String, dynamic> response = await _apiClient.getJson('/api/jobs');
     final dynamic data = response['data'];
 
     if (data is! List) {
-      return <Job>[];
+      return <WorkspaceJobRecord>[];
     }
 
     return data
         .whereType<Map<String, dynamic>>()
-        .map(Job.fromBackendJson)
+        .map(WorkspaceJobRecord.fromJson)
         .toList(growable: false);
   }
 
@@ -172,5 +171,18 @@ class WorkspaceRepository {
 
   Future<void> createAssignment(CreateAssignmentInput input) async {
     await _apiClient.postJson('/api/assignments', body: input.toJson());
+  }
+
+  Future<AutoAssignRunResult> autoAssignJobs({String? jobId}) async {
+    final Map<String, dynamic> response = await _apiClient.postJson(
+      '/api/assignments/auto',
+      body: jobId == null
+          ? const <String, dynamic>{}
+          : <String, dynamic>{'jobId': jobId},
+    );
+
+    return AutoAssignRunResult.fromJson(
+      response['data'] as Map<String, dynamic>? ?? <String, dynamic>{},
+    );
   }
 }
