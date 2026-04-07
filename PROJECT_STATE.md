@@ -25,6 +25,7 @@
 - Phase 4 now includes the worker tracking ingestion pipeline, async geofence triggering, and scheduled stale-worker inactivity checks
 - Phase 5 mobile foundation is in progress on its own branch with Flutter feature architecture, Supabase auth flow, and mock-backed jobs UI
 - Phase 6 mobile location tracking is now in progress on its own branch with a dedicated `LocationService`, geolocator/permission_handler integration, native platform permission entries, and a real permission explainer screen
+- Repository-wide documentation is being expanded so contributors can understand each major folder faster
 
 ## Landing Page Status
 
