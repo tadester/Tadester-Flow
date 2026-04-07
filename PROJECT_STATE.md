@@ -19,6 +19,12 @@
 - Phase 3 Docker and docker-compose scaffolding added for backend local container runs
 - Phase 3 backend GitHub Actions CI/CD workflow added with backend-only path filtering
 - Phase 3 backend now includes real health and config tests instead of a no-op test script
+- Phase 4 API surface branch now includes modular routes, controllers, services, auth middleware, and Zod validation for jobs, locations, assignments, and worker status
+- Phase 4 now also includes a standalone Google Maps-based `RoutingService` for daily worker ETAs with safe fallback behavior
+- Phase 4 now also includes a standalone `GeofenceService` with Haversine distance checks, transition-based event creation, and ping accuracy filtering
+- Phase 4 now includes the worker tracking ingestion pipeline, async geofence triggering, and scheduled stale-worker inactivity checks
+- Phase 5 mobile foundation is in progress on its own branch with Flutter feature architecture, Supabase auth flow, and mock-backed jobs UI
+- Phase 6 mobile location tracking is now in progress on its own branch with a dedicated `LocationService`, geolocator/permission_handler integration, native platform permission entries, and a real permission explainer screen
 - Repository-wide documentation is being expanded so contributors can understand each major folder faster
 
 ## Landing Page Status
@@ -50,5 +56,10 @@
 - Install `landing-page` dependencies
 - Run local verification for `npm run build` and linting
 - Run the new backend Supabase migrations against a project and verify seed/RLS behavior
-- Install backend dependencies and verify `npm run build`, `npm run dev`, and `/api/health`
+- Configure backend env values including `SUPABASE_SERVICE_ROLE_KEY` in local/dev and hosting environments
+- Add a real `GOOGLE_MAPS_API_KEY` in backend environments before using route ETA calculations
+- Verify Phase 4 endpoints against a live Supabase project with real JWTs and role-aware access
 - Verify `docker compose up --build` locally against the new backend container setup
+- Replace `mobile-app/.env` placeholder values with real Supabase credentials before running the Flutter app against live auth
+- Validate the mobile Phase 5 auth and jobs flow on-device or emulator against the live Supabase project
+- Validate the new mobile Phase 6 foreground tracking flow on a real device or emulator with GPS services enabled

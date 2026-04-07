@@ -2,7 +2,9 @@ import cors from "cors";
 import express from "express";
 import helmet from "helmet";
 
-import { apiRouter } from "./api";
+import { errorHandler } from "./middleware/errorHandler";
+import { notFoundHandler } from "./middleware/notFoundHandler";
+import { apiRouter, publicRouter } from "./routes";
 
 export function createApp() {
   const app = express();
@@ -11,8 +13,11 @@ export function createApp() {
   app.use(helmet());
   app.use(express.json());
 
-  app.use("/", apiRouter);
+  app.use("/", publicRouter);
   app.use("/api", apiRouter);
+
+  app.use(notFoundHandler);
+  app.use(errorHandler);
 
   return app;
 }

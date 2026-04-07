@@ -1,0 +1,1 @@
+ /Users/ktr/Documents/GitHub/tadesterflow/mobile-app/build/db847db308322cb47da76fc2eff1d490/dart_build_result.json:  /Users/ktr/Documents/GitHub/tadesterflow/mobile-app/.dart_tool/package_config.json /Users/ktr/Documents/GitHub/tadesterflow/mobile-app/pubspec.yaml /Users/ktr/development/flutter/bin/cache/dart-sdk/version
