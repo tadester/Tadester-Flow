@@ -17,6 +17,10 @@ router.post(
   validateBody(createLocationSchema),
   asyncHandler(createLocationController),
 );
-router.get("/", asyncHandler(listLocationsController));
+router.get(
+  "/",
+  requireRole(["admin", "dispatcher", "operator", "field_worker"]),
+  asyncHandler(listLocationsController),
+);
 
 export { router as locationsRouter };

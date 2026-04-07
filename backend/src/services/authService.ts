@@ -1,17 +1,16 @@
-import jwt from "jsonwebtoken";
-
 import type { AuthenticatedUser, JwtClaims } from "../domain/auth";
 import { UnauthorizedError } from "../utils/errors";
 import { getProfileById } from "./profileService";
+import { supabaseAdmin } from "./supabaseService";
 
 export async function authenticateToken(token: string): Promise<AuthenticatedUser> {
-  const decoded = jwt.decode(token);
+  const { data, error } = await supabaseAdmin.auth.getUser(token);
 
-  if (!decoded || typeof decoded !== "object") {
-    throw new UnauthorizedError("Invalid authentication token.");
+  if (error || !data.user) {
+    throw new UnauthorizedError("Invalid or expired authentication token.");
   }
 
-  const claims = decoded as JwtClaims;
+  const claims = data.user as unknown as JwtClaims;
 
   if (!claims.sub) {
     throw new UnauthorizedError("Authentication token is missing a subject.");

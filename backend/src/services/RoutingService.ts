@@ -51,7 +51,7 @@ type RoutingPair = {
   to: RoutingStop;
 };
 
-type RoutingJobRecord = {
+export type RoutingJobRecord = {
   id: string;
   title: string;
   status: string;
@@ -246,9 +246,8 @@ export class RoutingService {
 
   async getDailyRoute(workerId: string, date: string): Promise<DailyRouteResult> {
     const orderedJobs = this.applyFutureOptimizationHook(
-      [...(await this.dataProvider.getAssignedJobsForDate(workerId, date))].sort(
-        (left, right) =>
-          Date.parse(left.scheduled_start_at) - Date.parse(right.scheduled_start_at),
+      sortRoutingJobsForDailyRoute(
+        await this.dataProvider.getAssignedJobsForDate(workerId, date),
       ),
     ).map(mapRoutingJobToOrderedJob);
 
@@ -457,4 +456,25 @@ function getUtcDateBounds(date: string): { startIso: string; endIso: string } {
     startIso: start.toISOString(),
     endIso: end.toISOString(),
   };
+}
+
+export function sortRoutingJobsForDailyRoute(
+  jobs: readonly RoutingJobRecord[],
+): RoutingJobRecord[] {
+  return [...jobs].sort((left, right) => {
+    const leftScheduledAt = Date.parse(left.scheduled_start_at);
+    const rightScheduledAt = Date.parse(right.scheduled_start_at);
+    const leftHasValidTime = !Number.isNaN(leftScheduledAt);
+    const rightHasValidTime = !Number.isNaN(rightScheduledAt);
+
+    if (leftHasValidTime && rightHasValidTime && leftScheduledAt !== rightScheduledAt) {
+      return leftScheduledAt - rightScheduledAt;
+    }
+
+    if (leftHasValidTime !== rightHasValidTime) {
+      return leftHasValidTime ? -1 : 1;
+    }
+
+    return left.id.localeCompare(right.id);
+  });
 }

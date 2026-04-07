@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,9 +11,25 @@ import 'core/config/env.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: '.env');
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+    if (kDebugMode) {
+      debugPrint('Unhandled Flutter framework error: ${details.exception}');
+    }
+  };
 
-  await Supabase.initialize(url: Env.supabaseUrl, anonKey: Env.supabaseAnonKey);
+  await runZonedGuarded(() async {
+    await dotenv.load(fileName: '.env');
+    await Supabase.initialize(
+      url: Env.supabaseUrl,
+      anonKey: Env.supabaseAnonKey,
+    );
 
-  runApp(const ProviderScope(child: TadesterOpsApp()));
+    runApp(const ProviderScope(child: TadesterOpsApp()));
+  }, (Object error, StackTrace stackTrace) {
+    if (kDebugMode) {
+      debugPrint('Unhandled app startup error: $error');
+      debugPrintStack(stackTrace: stackTrace);
+    }
+  });
 }

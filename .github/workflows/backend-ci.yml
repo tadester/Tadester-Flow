@@ -45,7 +45,7 @@ jobs:
   cd:
     name: CD
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && secrets.BACKEND_DEPLOY_HOOK != ''
 
     steps:
       - name: Checkout code

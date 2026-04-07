@@ -26,6 +26,9 @@
 - Phase 5 mobile foundation is in progress on its own branch with Flutter feature architecture, Supabase auth flow, and mock-backed jobs UI
 - Phase 6 mobile location tracking is now in progress on its own branch with a dedicated `LocationService`, geolocator/permission_handler integration, native platform permission entries, and a real permission explainer screen
 - Repository-wide documentation is being expanded so contributors can understand each major folder faster
+- Phase 7 QA hardening is in progress on its own branch with new backend unit tests for geofence/state/routing logic, env-gated live Supabase security test scaffolding, and a pre-flight QA audit report
+- Backend JWT auth now verifies tokens against Supabase instead of decoding them blindly
+- Mobile startup and location-permission flows now have stronger failure handling, and the tracked mobile `.env` has been reset to placeholder-only values
 
 ## Landing Page Status
 
@@ -63,3 +66,5 @@
 - Replace `mobile-app/.env` placeholder values with real Supabase credentials before running the Flutter app against live auth
 - Validate the mobile Phase 5 auth and jobs flow on-device or emulator against the live Supabase project
 - Validate the new mobile Phase 6 foreground tracking flow on a real device or emulator with GPS services enabled
+- Wire real Supabase security test credentials into backend CI if you want the new RLS/auth integration suite to run automatically instead of skipping
+- Address the pre-flight report findings in `PRE_FLIGHT_QA_REPORT.md` before declaring the product pilot-ready

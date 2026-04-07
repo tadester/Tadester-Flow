@@ -216,8 +216,10 @@ export class GeofenceService {
         assignedLocation.longitude,
       );
 
-      const state: GeofenceState =
-        distanceMeters <= assignedLocation.geofenceRadiusMeters ? "inside" : "outside";
+      const state = determineGeofenceState(
+        distanceMeters,
+        assignedLocation.geofenceRadiusMeters,
+      );
 
       const lastEvent = await this.dataProvider.getLastLocationEvent(
         input.workerId,
@@ -289,11 +291,24 @@ export function calculateDistanceMeters(
   return earthRadiusMeters * centralAngle;
 }
 
+export function determineGeofenceState(
+  distanceMeters: number,
+  radiusMeters: number,
+): GeofenceState {
+  const floatingPointToleranceMeters = 0.000001;
+
+  return distanceMeters <= radiusMeters + floatingPointToleranceMeters
+    ? "inside"
+    : "outside";
+}
+
 function toRadians(value: number): number {
   return (value * Math.PI) / 180;
 }
 
-function mapEventToState(eventType: GeofenceEventType | undefined): GeofenceState | null {
+export function mapEventToState(
+  eventType: GeofenceEventType | undefined,
+): GeofenceState | null {
   if (!eventType) {
     return null;
   }
@@ -301,7 +316,7 @@ function mapEventToState(eventType: GeofenceEventType | undefined): GeofenceStat
   return eventType === "geofence_enter" ? "inside" : "outside";
 }
 
-function determineTransitionEvent(
+export function determineTransitionEvent(
   previousState: GeofenceState | null,
   currentState: GeofenceState,
 ): GeofenceEventType | null {

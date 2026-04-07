@@ -19,8 +19,16 @@ router.post(
   validateBody(createJobSchema),
   asyncHandler(createJobController),
 );
-router.get("/", asyncHandler(listJobsController));
-router.get("/:id", asyncHandler(getJobDetailsController));
+router.get(
+  "/",
+  requireRole(["admin", "dispatcher", "operator", "field_worker"]),
+  asyncHandler(listJobsController),
+);
+router.get(
+  "/:id",
+  requireRole(["admin", "dispatcher", "operator", "field_worker"]),
+  asyncHandler(getJobDetailsController),
+);
 router.patch(
   "/:id/status",
   requireRole(["admin", "dispatcher", "operator"]),

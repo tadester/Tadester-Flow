@@ -18,6 +18,7 @@ class _LocationPermissionScreenState
     extends ConsumerState<LocationPermissionScreen> {
   LocationPermissionState? _permissionState;
   bool _isBusy = false;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -28,81 +29,154 @@ class _LocationPermissionScreenState
   }
 
   Future<void> _refreshPermissionState() async {
-    final LocationService service = ref.read(locationServiceProvider);
-    final LocationPermissionState permissionState = await service
-        .getPermissionState();
+    try {
+      final LocationService service = ref.read(locationServiceProvider);
+      final LocationPermissionState permissionState = await service
+          .getPermissionState();
 
-    if (!mounted) {
-      return;
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _permissionState = permissionState;
+        _errorMessage = null;
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage =
+            'Unable to read location permission state right now.';
+      });
     }
-
-    setState(() {
-      _permissionState = permissionState;
-    });
   }
 
   Future<void> _requestPermission() async {
     setState(() {
       _isBusy = true;
+      _errorMessage = null;
     });
 
-    final LocationService service = ref.read(locationServiceProvider);
-    final LocationPermissionState permissionState = await service
-        .requestPermission();
+    try {
+      final LocationService service = ref.read(locationServiceProvider);
+      final LocationPermissionState permissionState = await service
+          .requestPermission();
 
-    if (!mounted) {
-      return;
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _permissionState = permissionState;
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage = 'Unable to request location permission right now.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isBusy = false;
+        });
+      }
     }
-
-    setState(() {
-      _permissionState = permissionState;
-      _isBusy = false;
-    });
   }
 
   Future<void> _startTracking() async {
     setState(() {
       _isBusy = true;
+      _errorMessage = null;
     });
 
-    final LocationService service = ref.read(locationServiceProvider);
-    await service.startTracking();
-    await service.prepareBackgroundTrackingHook();
-    final LocationPermissionState permissionState = await service
-        .getPermissionState();
+    try {
+      final LocationService service = ref.read(locationServiceProvider);
+      await service.startTracking();
+      await service.prepareBackgroundTrackingHook();
+      final LocationPermissionState permissionState = await service
+          .getPermissionState();
 
-    if (!mounted) {
-      return;
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _permissionState = permissionState;
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage = 'Unable to start tracking right now.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isBusy = false;
+        });
+      }
     }
-
-    setState(() {
-      _permissionState = permissionState;
-      _isBusy = false;
-    });
   }
 
   Future<void> _stopTracking() async {
     setState(() {
       _isBusy = true;
+      _errorMessage = null;
     });
 
-    await ref.read(locationServiceProvider).stopTracking();
+    try {
+      await ref.read(locationServiceProvider).stopTracking();
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
 
-    if (!mounted) {
-      return;
+      setState(() {
+        _errorMessage = 'Unable to stop tracking right now.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isBusy = false;
+        });
+      }
     }
-
-    setState(() {
-      _isBusy = false;
-    });
   }
 
   Future<void> _openAppSettings() async {
-    await ref.read(locationServiceProvider).openAppSettings();
+    try {
+      await ref.read(locationServiceProvider).openAppSettings();
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage = 'Unable to open app settings right now.';
+      });
+    }
   }
 
   Future<void> _openLocationSettings() async {
-    await ref.read(locationServiceProvider).openLocationSettings();
+    try {
+      await ref.read(locationServiceProvider).openLocationSettings();
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage = 'Unable to open location settings right now.';
+      });
+    }
   }
 
   @override
@@ -140,6 +214,16 @@ class _LocationPermissionScreenState
                 title: _panelTitle(permissionState),
                 message: _panelMessage(permissionState),
               ),
+              if (_errorMessage != null) ...<Widget>[
+                const SizedBox(height: 12),
+                Text(
+                  _errorMessage!,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.error,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
               const SizedBox(height: 16),
               _TrackingStatusCard(
                 trackingStatusAsync: trackingStatusAsync,
