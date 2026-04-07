@@ -1,10 +1,13 @@
 import type { TrackingPingInput } from "../schemas/trackingSchemas";
 import { logger } from "../utils/logger";
 import { enqueueBackgroundTask } from "../utils/backgroundTaskQueue";
-import { handleSupabaseError } from "../utils/supabaseErrors";
-import { updateProfileStatus } from "./profileService";
 import { GeofenceService } from "./GeofenceService";
-import { supabaseAdmin } from "./supabaseService";
+import {
+  insertWorkerLocationPing,
+  markWorkerActiveAndTouchLastSeen,
+  type TrackingPingInsert,
+  type WorkerLocationPingRecord,
+} from "../repositories/trackingRepository";
 
 type IngestionOptions = {
   organizationId: string;
@@ -12,56 +15,45 @@ type IngestionOptions = {
   ping: TrackingPingInput;
 };
 
-type PingInsertRecord = {
-  organization_id: string;
-  worker_profile_id: string;
-  latitude: number;
-  longitude: number;
-  accuracy_meters: number;
-  recorded_at: string;
-  source: "mobile_foreground";
-};
-
 type IngestionDependencies = {
-  geofenceService?: Pick<GeofenceService, "checkGeofence">;
-  pingWriter?: (record: PingInsertRecord) => Promise<void>;
-  setWorkerStatus?: (workerId: string, status: "active" | "inactive") => Promise<void>;
+  geofenceService?: Pick<GeofenceService, "evaluate">;
+  pingWriter?: (record: TrackingPingInsert) => Promise<WorkerLocationPingRecord>;
+  markWorkerActive?: (workerId: string) => Promise<void>;
 };
 
 export class IngestionService {
-  private readonly geofenceService: Pick<GeofenceService, "checkGeofence">;
-  private readonly pingWriter: (record: PingInsertRecord) => Promise<void>;
-  private readonly setWorkerStatus: (
-    workerId: string,
-    status: "active" | "inactive",
-  ) => Promise<void>;
+  private readonly geofenceService: Pick<GeofenceService, "evaluate">;
+  private readonly pingWriter: (
+    record: TrackingPingInsert,
+  ) => Promise<WorkerLocationPingRecord>;
+  private readonly markWorkerActive: (workerId: string) => Promise<void>;
 
   constructor(dependencies: IngestionDependencies = {}) {
     this.geofenceService = dependencies.geofenceService ?? new GeofenceService();
     this.pingWriter = dependencies.pingWriter ?? insertWorkerLocationPing;
-    this.setWorkerStatus = dependencies.setWorkerStatus ?? updateProfileStatus;
+    this.markWorkerActive =
+      dependencies.markWorkerActive ?? markWorkerActiveAndTouchLastSeen;
   }
 
   async ingestPing(options: IngestionOptions): Promise<void> {
     await this.pingWriter({
-      organization_id: options.organizationId,
-      worker_profile_id: options.workerId,
+      organizationId: options.organizationId,
+      workerId: options.workerId,
       latitude: options.ping.latitude,
       longitude: options.ping.longitude,
-      accuracy_meters: options.ping.accuracy_meters,
-      recorded_at: options.ping.timestamp,
-      source: "mobile_foreground",
+      accuracy: options.ping.accuracy,
+      timestamp: options.ping.timestamp,
     });
 
-    await this.setWorkerStatus(options.workerId, "active");
+    await this.markWorkerActive(options.workerId);
 
     enqueueBackgroundTask("geofence_processing", async () => {
       try {
-        await this.geofenceService.checkGeofence({
+        await this.geofenceService.evaluate({
           workerId: options.workerId,
           latitude: options.ping.latitude,
           longitude: options.ping.longitude,
-          accuracy_meters: options.ping.accuracy_meters,
+          accuracy_meters: options.ping.accuracy,
           timestamp: options.ping.timestamp,
         });
       } catch (error) {
@@ -70,13 +62,5 @@ export class IngestionService {
         logger.error(`geofence_processing failed: ${message}`);
       }
     });
-  }
-}
-
-async function insertWorkerLocationPing(record: PingInsertRecord): Promise<void> {
-  const { error } = await supabaseAdmin.from("worker_location_pings").insert(record);
-
-  if (error) {
-    handleSupabaseError(error, "Failed to store worker location ping.");
   }
 }

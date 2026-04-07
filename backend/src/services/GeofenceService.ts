@@ -196,7 +196,7 @@ export class GeofenceService {
     this.dataProvider = dataProvider;
   }
 
-  async checkGeofence(input: CheckGeofenceInput): Promise<CheckGeofenceResult> {
+  async evaluate(input: CheckGeofenceInput): Promise<CheckGeofenceResult> {
     if (input.accuracy_meters > MAX_ACCEPTABLE_ACCURACY_METERS) {
       return {
         worker_id: input.workerId,
@@ -257,6 +257,10 @@ export class GeofenceService {
       ignored: false,
       evaluations,
     };
+  }
+
+  async checkGeofence(input: CheckGeofenceInput): Promise<CheckGeofenceResult> {
+    return this.evaluate(input);
   }
 }
 
