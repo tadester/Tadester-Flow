@@ -1,16 +1,28 @@
 # Landing Page
 
-Next.js App Router scaffold for the Tadester Ops landing page.
+This folder contains the public-facing Tadester Ops marketing site.
 
-## Included
+## Responsibilities
 
-- App Router
+- present the product narrative
+- collect waitlist leads
+- host legal pages
+- serve the first impression of the product before a user reaches backend or mobile surfaces
+
+## Tech Stack
+
+- Next.js App Router
 - TypeScript
 - Tailwind CSS
-- Phase 1 folder structure
 
-## Not Included Yet
+## Main Folders
 
-- Business logic
-- Supabase integration code
-- API implementation details
+- `app/`: routes, page assembly, metadata, and API endpoints
+- `components/`: reusable layout, sections, and UI controls
+- `lib/`: helpers and validation logic
+- `public/`: static assets
+- `types/`: shared TypeScript models
+
+## Current Maturity
+
+This is the strongest user-facing area in the repo. It already includes homepage sections, shared UI, legal pages, and waitlist support code.

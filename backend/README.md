@@ -76,7 +76,24 @@ npm test
 npm run dev
 ```
 
-## Docker
+Health check routes:
+
+- `/health`
+- `/api/health`
+
+## Validation Commands
+
+- `npm run lint`
+- `npm run build`
+- `npm test`
+
+## Folder Map
+
+- `src/`: application source
+- `supabase/`: backend-owned database workspace
+- `dist/`: generated build output
+
+## Current Maturity
 
 From the repo root:
 
