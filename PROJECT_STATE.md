@@ -23,6 +23,7 @@
 - Phase 4 now also includes a standalone Google Maps-based `RoutingService` for daily worker ETAs with safe fallback behavior
 - Phase 4 now also includes a standalone `GeofenceService` with Haversine distance checks, transition-based event creation, and ping accuracy filtering
 - Phase 4 now includes the worker tracking ingestion pipeline, async geofence triggering, and scheduled stale-worker inactivity checks
+- Phase 5 mobile foundation is in progress on its own branch with Flutter feature architecture, Supabase auth flow, and mock-backed jobs UI
 
 ## Landing Page Status
 
@@ -57,3 +58,5 @@
 - Add a real `GOOGLE_MAPS_API_KEY` in backend environments before using route ETA calculations
 - Verify Phase 4 endpoints against a live Supabase project with real JWTs and role-aware access
 - Verify `docker compose up --build` locally against the new backend container setup
+- Replace `mobile-app/.env` placeholder values with real Supabase credentials before running the Flutter app against live auth
+- Validate the mobile Phase 5 auth and jobs flow on-device or emulator against the live Supabase project
