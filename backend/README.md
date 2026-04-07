@@ -312,3 +312,37 @@ This backend is locally verified, but some behavior still needs live environment
 - real Google Maps API calls with your production key
 - scheduler behavior over time in hosting
 On this branch, the backend is scaffold-first and operationally clean, but still intentionally narrow in terms of API surface.
+
+## Demo Seed Script
+
+Use the backend demo seed script when you want working login accounts plus realistic organization data for the admin and worker flows.
+
+What it does:
+
+- removes the old demo users and their related demo operational data for the seeded demo organizations
+- recreates valid Supabase Auth users through the Admin API
+- inserts or refreshes demo organizations, profiles, locations, jobs, assignments, pings, and events
+- prints the working demo credentials at the end
+
+Run it from `backend/`:
+
+```bash
+npm run seed:demo
+```
+
+Optional environment variable:
+
+- `DEMO_SEED_PASSWORD`
+  - defaults to `password123`
+
+Example:
+
+```bash
+DEMO_SEED_PASSWORD=password123 npm run seed:demo
+```
+
+Important:
+
+- this script requires a real `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `backend/.env`
+- this is now the preferred way to create the demo Phase 9 users because it uses the Supabase Admin API instead of raw SQL inserts into `auth.users`
+- if you already applied the earlier Phase 9 SQL migration, this script cleans up and replaces those broken demo auth users
