@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/services/backend_api_client.dart';
-import '../../../../shared/models/job.dart';
 import '../../data/workspace_repository.dart';
 import '../../domain/models/workspace_models.dart';
 
@@ -25,8 +24,8 @@ final FutureProvider<List<LocationRecord>> workspaceLocationsProvider =
       return ref.read(workspaceRepositoryProvider).getLocations();
     });
 
-final FutureProvider<List<Job>> workspaceJobsProvider =
-    FutureProvider<List<Job>>((Ref ref) {
+final FutureProvider<List<WorkspaceJobRecord>> workspaceJobsProvider =
+    FutureProvider<List<WorkspaceJobRecord>>((Ref ref) {
       return ref.read(workspaceRepositoryProvider).getJobs();
     });
 
