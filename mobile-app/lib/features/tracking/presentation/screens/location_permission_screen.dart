@@ -99,6 +99,7 @@ class _LocationPermissionScreenState
       final LocationService service = ref.read(locationServiceProvider);
       await service.startTracking();
       await service.prepareBackgroundTrackingHook();
+      await ref.read(trackingSyncServiceProvider).start();
       final LocationPermissionState permissionState = await service
           .getPermissionState();
 
@@ -133,6 +134,7 @@ class _LocationPermissionScreenState
     });
 
     try {
+      await ref.read(trackingSyncServiceProvider).stop();
       await ref.read(locationServiceProvider).stopTracking();
     } catch (_) {
       if (!mounted) {

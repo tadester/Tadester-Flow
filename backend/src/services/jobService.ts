@@ -22,6 +22,32 @@ type JobRecord = {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  locations:
+    | {
+        id: string;
+        name: string;
+      }
+    | Array<{
+        id: string;
+        name: string;
+      }>
+    | null;
+};
+
+type JobResponse = {
+  id: string;
+  organization_id: string;
+  location_id: string;
+  location_name: string | null;
+  title: string;
+  description: string | null;
+  status: string;
+  priority: string;
+  scheduled_start_at: string;
+  scheduled_end_at: string;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
 };
 
 type JobListOptions = {
@@ -64,20 +90,36 @@ export async function createJob(options: {
       scheduled_end_at: options.input.scheduledEndAt,
       created_by: options.createdBy,
     })
-    .select("*")
+    .select(
+      `
+        *,
+        locations(
+          id,
+          name
+        )
+      `,
+    )
     .single<JobRecord>();
 
   if (error) {
     handleSupabaseError(error, "Failed to create job.");
   }
 
-  return data;
+  return data ? mapJobRecord(data) : data;
 }
 
 export async function listJobs(options: JobListOptions) {
   let query = supabaseAdmin
     .from("jobs")
-    .select("*")
+    .select(
+      `
+        *,
+        locations(
+          id,
+          name
+        )
+      `,
+    )
     .eq("organization_id", options.organizationId)
     .order("scheduled_start_at", { ascending: true });
 
@@ -97,7 +139,7 @@ export async function listJobs(options: JobListOptions) {
     handleSupabaseError(error, "Failed to list jobs.");
   }
 
-  return data ?? [];
+  return (data ?? []).map(mapJobRecord);
 }
 
 export async function getJobById(options: {
@@ -116,7 +158,15 @@ export async function getJobById(options: {
 
   const { data, error } = await supabaseAdmin
     .from("jobs")
-    .select("*")
+    .select(
+      `
+        *,
+        locations(
+          id,
+          name
+        )
+      `,
+    )
     .eq("organization_id", options.organizationId)
     .eq("id", options.jobId)
     .single<JobRecord>();
@@ -129,7 +179,7 @@ export async function getJobById(options: {
     throw new NotFoundError("Job not found.");
   }
 
-  return data;
+  return mapJobRecord(data);
 }
 
 export async function updateJobStatus(options: {
@@ -142,7 +192,15 @@ export async function updateJobStatus(options: {
     .update({ status: options.status })
     .eq("organization_id", options.organizationId)
     .eq("id", options.jobId)
-    .select("*")
+    .select(
+      `
+        *,
+        locations(
+          id,
+          name
+        )
+      `,
+    )
     .single<JobRecord>();
 
   if (error) {
@@ -153,5 +211,27 @@ export async function updateJobStatus(options: {
     throw new NotFoundError("Job not found.");
   }
 
-  return data;
+  return mapJobRecord(data);
+}
+
+function mapJobRecord(record: JobRecord): JobResponse {
+  const location = Array.isArray(record.locations)
+    ? record.locations[0]
+    : record.locations;
+
+  return {
+    id: record.id,
+    organization_id: record.organization_id,
+    location_id: record.location_id,
+    location_name: location?.name ?? null,
+    title: record.title,
+    description: record.description,
+    status: record.status,
+    priority: record.priority,
+    scheduled_start_at: record.scheduled_start_at,
+    scheduled_end_at: record.scheduled_end_at,
+    created_by: record.created_by,
+    created_at: record.created_at,
+    updated_at: record.updated_at,
+  };
 }

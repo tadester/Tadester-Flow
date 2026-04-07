@@ -5,6 +5,7 @@ class Env {
 
   static String get supabaseUrl => _require('SUPABASE_URL');
   static String get supabaseAnonKey => _require('SUPABASE_ANON_KEY');
+  static String get backendApiUrl => _require('BACKEND_API_URL');
 
   static String _require(String key) {
     final String? value = dotenv.env[key];
