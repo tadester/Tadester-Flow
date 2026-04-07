@@ -5,15 +5,21 @@ import { supabaseAdmin } from "./supabaseService";
 export type ProfileRecord = {
   id: string;
   email: string;
+  full_name: string | null;
+  phone: string | null;
   role: "admin" | "dispatcher" | "operator" | "field_worker";
   organization_id: string;
   status: "active" | "inactive";
+  created_at?: string;
+  updated_at?: string;
 };
 
-export async function getProfileById(profileId: string): Promise<ProfileRecord> {
+export async function getProfileById(
+  profileId: string,
+): Promise<ProfileRecord> {
   const { data, error } = await supabaseAdmin
     .from("profiles")
-    .select("id, email, role, organization_id, status")
+    .select("id, email, full_name, phone, role, organization_id, status")
     .eq("id", profileId)
     .single<ProfileRecord>();
 
@@ -28,7 +34,31 @@ export async function getProfileById(profileId: string): Promise<ProfileRecord> 
   return data;
 }
 
-export async function updateProfileStatus(profileId: string, status: "active" | "inactive") {
+export async function listProfilesByOrganization(
+  organizationId: string,
+): Promise<ProfileRecord[]> {
+  const { data, error } = await supabaseAdmin
+    .from("profiles")
+    .select(
+      "id, email, full_name, phone, role, organization_id, status, created_at, updated_at",
+    )
+    .eq("organization_id", organizationId)
+    .order("role", { ascending: true })
+    .order("full_name", { ascending: true, nullsFirst: false })
+    .order("email", { ascending: true })
+    .returns<ProfileRecord[]>();
+
+  if (error) {
+    handleSupabaseError(error, "Failed to list organization profiles.");
+  }
+
+  return data ?? [];
+}
+
+export async function updateProfileStatus(
+  profileId: string,
+  status: "active" | "inactive",
+) {
   const { error } = await supabaseAdmin
     .from("profiles")
     .update({ status })

@@ -1,4 +1,4 @@
-import type { AuthenticatedUser, JwtClaims } from "../domain/auth";
+import type { AuthenticatedUser } from "../domain/auth";
 import { UnauthorizedError } from "../utils/errors";
 import { getProfileById } from "./profileService";
 import { supabaseAdmin } from "./supabaseService";
@@ -10,13 +10,11 @@ export async function authenticateToken(token: string): Promise<AuthenticatedUse
     throw new UnauthorizedError("Invalid or expired authentication token.");
   }
 
-  const claims = data.user as unknown as JwtClaims;
-
-  if (!claims.sub) {
-    throw new UnauthorizedError("Authentication token is missing a subject.");
+  if (!data.user.id) {
+    throw new UnauthorizedError("Authentication token is missing a user id.");
   }
 
-  const profile = await getProfileById(claims.sub);
+  const profile = await getProfileById(data.user.id);
 
   return {
     id: profile.id,

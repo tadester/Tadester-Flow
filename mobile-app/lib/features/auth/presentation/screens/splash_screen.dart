@@ -32,7 +32,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           }
 
           context.goNamed(
-            user == null ? AppRoute.login.nameValue : AppRoute.jobs.nameValue,
+            user == null
+                ? AppRoute.login.nameValue
+                : AppRoute.workspace.nameValue,
           );
         });
       });

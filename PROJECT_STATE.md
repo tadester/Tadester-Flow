@@ -69,6 +69,12 @@
 - Validate the mobile Phase 5 auth and jobs flow on-device or emulator against the live Supabase project
 - Validate the new mobile Phase 6 foreground tracking flow on a real device or emulator with GPS services enabled
 - Set `BACKEND_API_URL` in `mobile-app/.env` to a reachable backend host for the simulator/device you are using before testing the end-to-end mobile flow
+- Apply `backend/supabase/migrations/018_seed_phase9_workspace_demo.sql` to your Supabase project so the new organization picker and dashboards have realistic demo records
+- Use the seeded demo accounts from the Phase 9 migration for fast admin and worker testing, or create a new organization from the Flutter sign-up flow
 - Wire real Supabase security test credentials into backend CI if you want the new RLS/auth integration suite to run automatically instead of skipping
 - Address the pre-flight report findings in `PRE_FLIGHT_QA_REPORT.md` before declaring the product pilot-ready
 - Upgrade the local landing-page Node runtime to Node 20+ before relying on local `next build`, since current package versions now require a newer engine than the local Node 18 install
+- Phase 9 organization-aware mobile operations is now in progress on its own branch with public backend sign-up endpoints, organization workspace endpoints, and a role-aware Flutter workspace for admins and workers
+- Flutter sign-up now supports joining an existing organization or creating a new organization as the first admin account
+- Flutter workspace routing now sends management roles to an admin dashboard and field workers to a worker dashboard backed by live backend data
+- A new Supabase demo-data migration seeds additional organizations, employees, locations, jobs, assignments, pings, and events so the admin and worker flows have real records to test against
