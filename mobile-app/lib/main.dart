@@ -10,7 +10,6 @@ import 'app/app.dart';
 import 'core/config/env.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.presentError(details);
     if (kDebugMode) {
@@ -19,6 +18,7 @@ Future<void> main() async {
   };
 
   await runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
     await dotenv.load(fileName: '.env');
     await Supabase.initialize(
       url: Env.supabaseUrl,

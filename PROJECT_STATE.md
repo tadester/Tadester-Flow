@@ -30,6 +30,7 @@
 - Backend JWT auth now verifies tokens against Supabase instead of decoding them blindly
 - Mobile startup and location-permission flows now have stronger failure handling, and the tracked mobile `.env` has been reset to placeholder-only values
 - Mobile app now fetches assigned jobs from the backend instead of mock data and can stream worker pings to the backend tracking endpoint when tracking is started
+- Landing page now includes dedicated Supabase auth destination pages for account confirmation and password reset flows
 
 ## Landing Page Status
 
@@ -70,3 +71,4 @@
 - Set `BACKEND_API_URL` in `mobile-app/.env` to a reachable backend host for the simulator/device you are using before testing the end-to-end mobile flow
 - Wire real Supabase security test credentials into backend CI if you want the new RLS/auth integration suite to run automatically instead of skipping
 - Address the pre-flight report findings in `PRE_FLIGHT_QA_REPORT.md` before declaring the product pilot-ready
+- Upgrade the local landing-page Node runtime to Node 20+ before relying on local `next build`, since current package versions now require a newer engine than the local Node 18 install
