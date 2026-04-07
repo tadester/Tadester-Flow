@@ -8,7 +8,7 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "lint": "eslint .",
-    "test": "node --test dist && jest --runInBand",
+    "test": "PORT=3000 SUPABASE_URL=https://example.supabase.co SUPABASE_SERVICE_ROLE_KEY=test-service-role-key node --test dist && jest --runInBand",
     "test:integration": "jest --runInBand",
     "format": "prettier --write ."
   },
