@@ -19,6 +19,7 @@
 - Phase 3 Docker and docker-compose scaffolding added for backend local container runs
 - Phase 3 backend GitHub Actions CI/CD workflow added with backend-only path filtering
 - Phase 3 backend now includes real health and config tests instead of a no-op test script
+- Repository-wide documentation is being expanded so contributors can understand each major folder faster
 
 ## Landing Page Status
 

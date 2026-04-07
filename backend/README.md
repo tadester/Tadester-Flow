@@ -1,24 +1,48 @@
 # Backend
 
-Node.js + TypeScript backend scaffold for Tadester Ops Phase 3.
+This folder contains the Tadester Ops backend service and the backend-owned Supabase workspace.
 
-## Included
+## Responsibilities
 
-- Express app bootstrap
-- Strict environment loading
-- Winston logging
-- `/api/health` endpoint
-- Supabase Phase 2 schema workspace in `supabase/`
+- run the Express API
+- validate backend environment variables
+- provide backend logging and startup behavior
+- define backend containerization and CI entrypoints
+- own the operational Supabase migration history
 
-## Run
+## Important Files
+
+- `package.json`: scripts and dependencies
+- `tsconfig.json`: TypeScript compiler configuration
+- `Dockerfile`: production container definition
+- `.env.example`: environment template
+- `src/`: runtime source code
+- `supabase/`: schema, seed, and migration assets
+
+## Run Locally
 
 1. Copy `.env.example` to `.env`
-2. Fill in required environment values
+2. Fill in the required values
 3. Run `npm install`
 4. Run `npm run dev`
 
-## Docker
+Health check routes:
 
-- Build and run with `docker compose up --build` from the repo root
-- Backend is exposed on port `3000`
-- Health check is available at `/health`
+- `/health`
+- `/api/health`
+
+## Validation Commands
+
+- `npm run lint`
+- `npm run build`
+- `npm test`
+
+## Folder Map
+
+- `src/`: application source
+- `supabase/`: backend-owned database workspace
+- `dist/`: generated build output
+
+## Current Maturity
+
+On this branch, the backend is scaffold-first and operationally clean, but still intentionally narrow in terms of API surface.
