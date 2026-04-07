@@ -75,6 +75,7 @@ npm run lint
 npm test
 npm run dev
 ```
+This folder contains the Tadester Ops backend service and the backend-owned Supabase workspace.
 
 Health check routes:
 
@@ -286,3 +287,4 @@ This backend is locally verified, but some behavior still needs live environment
 - live writes to `worker_location_pings` and `location_events`
 - real Google Maps API calls with your production key
 - scheduler behavior over time in hosting
+On this branch, the backend is scaffold-first and operationally clean, but still intentionally narrow in terms of API surface.
