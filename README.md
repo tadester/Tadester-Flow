@@ -1,12 +1,64 @@
 # Tadester Ops Monorepo
 
-This repository contains the current Tadester Ops MVP surfaces:
+Tadester Ops is an operations platform for field crews. This monorepo contains the public lead funnel, the backend API and database workspace, and the Flutter operations app used by admins, dispatchers, operators, and field workers.
 
-- [landing-page/](/Users/ktr/Documents/GitHub/tadesterflow/landing-page): Next.js marketing site and waitlist flow
-- [backend/](/Users/ktr/Documents/GitHub/tadesterflow/backend): Node.js + TypeScript API and operational services
-- [mobile-app/](/Users/ktr/Documents/GitHub/tadesterflow/mobile-app): Flutter mobile app
+## Repo Structure
 
-## Quick Start
+- `landing-page/`: Next.js marketing site, waitlist capture, and email-link auth pages
+- `backend/`: Node.js + TypeScript API, tests, Docker setup, and Supabase migrations/scripts
+- `mobile-app/`: Flutter app for organization sign-in, admin operations, worker jobs, routing, and tracking
+- `PROJECT_STATE.md`: rolling implementation snapshot
+- `docker-compose.yml`: local backend + Postgres composition
+
+## Current Product State
+
+What is already built:
+
+- live landing page and waitlist capture
+- Supabase schema with organizations, profiles, jobs, assignments, pings, and geofence events
+- modular backend with auth, jobs, assignments, tracking ingestion, geofence handling, and routing
+- Flutter app with org-aware auth, role-based dashboards, worker route map, and tracking controls
+
+## Prerequisites
+
+### Backend
+
+- Node.js 20+
+- npm
+- Supabase project with the Tadester Ops schema applied
+
+### Mobile App
+
+- Flutter SDK
+- Xcode for iOS builds
+- CocoaPods for iOS dependency install
+- a Google Maps API key for in-app route maps
+
+## Environment Setup
+
+### Backend
+
+Create `backend/.env`:
+
+```env
+PORT=3000
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+GOOGLE_MAPS_API_KEY=your_google_maps_key
+```
+
+### Mobile App
+
+Create or update `mobile-app/.env`:
+
+```env
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_ANON_KEY=your_anon_key
+BACKEND_API_URL=https://tadester-ops.onrender.com
+GOOGLE_MAPS_API_KEY=your_google_maps_key
+```
+
+## Running The Project
 
 ### Landing Page
 
@@ -24,96 +76,114 @@ npm install
 npm run dev
 ```
 
-### Docker
+Health checks:
 
-From the repo root:
+- `http://localhost:3000/health`
+- `http://localhost:3000/api/health`
+
+### Mobile App
 
 ```bash
-docker compose up --build
+cd mobile-app
+flutter pub get
+flutter run
 ```
 
-## Backend Requirements
+### iOS-specific rebuild after native changes
 
-To run the backend properly, install:
+```bash
+cd mobile-app
+flutter clean
+flutter pub get
+cd ios
+pod install
+cd ..
+flutter run
+```
 
-- Node.js 20+
-- npm
+### macOS desktop rebuild after entitlement changes
 
-Optional but useful:
+```bash
+cd mobile-app
+flutter clean
+flutter pub get
+flutter run -d macos
+```
 
-- Docker Desktop
+## Demo Data And Tester Login Details
 
-Required backend env variables are documented in [backend/README.md](/Users/ktr/Documents/GitHub/tadesterflow/backend/README.md).
+Seed demo workspace data from the backend:
 
-## Current Backend Capabilities
+```bash
+cd backend
+npm install
+npm run seed:demo
+```
 
-The backend currently includes:
+Tester login details:
 
-- health endpoint
-- jobs, locations, assignments, and worker-status API routes
-- worker location ingestion
-- async geofence processing
-- stale worker scheduler
-- routing ETA service with Google Maps fallback support
+### Management
 
-## Project Tracking
+- `demo.north.admin@tadesterops.dev` / `password123`
+- `demo.north.dispatcher@tadesterops.dev` / `password123`
+- `demo.prairie.admin@tadesterops.dev` / `password123`
+- `demo.prairie.operator@tadesterops.dev` / `password123`
 
-Current implementation state is tracked in [PROJECT_STATE.md](/Users/ktr/Documents/GitHub/tadesterflow/PROJECT_STATE.md).
-This repository contains the three main product surfaces for Tadester Ops:
+### Workers
 
-- `landing-page/`: public marketing site and waitlist flow
-- `backend/`: Node.js API and backend-owned Supabase workspace
-- `mobile-app/`: Flutter client workspace
+- `demo.north.worker.one@tadesterops.dev` / `password123`
+- `demo.north.worker.two@tadesterops.dev` / `password123`
+- `demo.prairie.worker.one@tadesterops.dev` / `password123`
+- `demo.prairie.worker.two@tadesterops.dev` / `password123`
 
-It also contains root-level operational files:
+Best first tests:
 
-- `PROJECT_STATE.md`: rolling implementation snapshot
-- `docker-compose.yml`: local backend + Postgres composition
-- `netlify.toml`: Netlify config for the landing page
-- `.github/`: CI/CD workflows
+- admin flow: `demo.north.admin@tadesterops.dev`
+- worker flow: `demo.north.worker.one@tadesterops.dev`
 
-## How To Navigate The Repo
+## What To Test
 
-This repo is organized by product surface instead of by language.
+### Admin flow
 
-- Work on marketing or waitlist UX in `landing-page/`
-- Work on APIs, containers, or schema in `backend/`
-- Work on Flutter/mobile runtime concerns in `mobile-app/`
+1. Sign in as `demo.north.admin@tadesterops.dev`
+2. Open overview, jobs, workers, and settings
+3. Create a location, create a job, and assign a worker
+4. Use auto-assign to distribute jobs by proximity
 
-Each major folder now includes documentation to explain what it owns.
+### Worker flow
 
-## Current Maturity By Area
+1. Sign in as `demo.north.worker.one@tadesterops.dev`
+2. Open Jobs and tap into job detail
+3. Open Route to see the ordered route and map
+4. Open Settings and enable live tracking
+5. Confirm the app requests location permission
 
-- `landing-page/` is the most complete user-facing area
-- `backend/` is scaffolded and deployable, with health, Docker, CI, and database workspace
-- `mobile-app/` on this branch is still early-stage and contains default Flutter scaffold code plus placeholder/experimental folders
+## Known Platform Notes
 
-That means some folders describe future intent as well as current reality.
+- On iPhone, `Open app settings` can only open the Tadester Ops app settings page. Apple does not allow apps to deep-link directly into the nested `Location` page.
+- On macOS, network client entitlements are enabled for Debug, Profile, and Release builds. If login still fails with `SocketException: Operation not permitted`, do a full clean rebuild so the new entitlements are picked up.
+- Workers are marked `active` when a fresh location ping is received and `inactive` after 10 minutes without a new ping.
 
-## Root Folder Guide
+## Validation Commands
 
-### `.github/`
-GitHub Actions workflows and repository automation.
+### Backend
 
-### `.vscode/`
-Editor-local configuration. Helpful for contributors, not runtime code.
+```bash
+cd backend
+npm test
+npm run lint
+```
 
-### `backend/`
-Backend service, tests, Docker setup, and Supabase migrations.
+### Mobile App
 
-### `landing-page/`
-Next.js landing page and waitlist frontend.
+```bash
+cd mobile-app
+flutter analyze
+flutter test
+```
 
-### `mobile-app/`
-Flutter application workspace and platform runners.
+## Additional Docs
 
-## Generated Folders
-
-The following folders are generated or environment-specific and are not the primary places to edit by hand:
-
-- `.git/`
-- `node_modules/`
-- `.next/`
-- `dist/`
-- `build/`
-- `.dart_tool/`
+- [backend/README.md](/Users/ktr/Developer/GitHub/tadesterflow/backend/README.md)
+- [mobile-app/README.md](/Users/ktr/Developer/GitHub/tadesterflow/mobile-app/README.md)
+- [PROJECT_STATE.md](/Users/ktr/Developer/GitHub/tadesterflow/PROJECT_STATE.md)
