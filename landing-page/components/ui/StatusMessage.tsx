@@ -1,7 +1,10 @@
-import type { WaitlistResponse } from "@/types/waitlist";
+type StatusMessageResponse = {
+  status: "success" | "error";
+  message: string;
+};
 
 type StatusMessageProps = {
-  response: WaitlistResponse | null;
+  response: StatusMessageResponse | null;
 };
 
 export function StatusMessage({ response }: StatusMessageProps) {
