@@ -179,6 +179,8 @@ class WorkspaceJobRecord {
     required this.priority,
     required this.locationId,
     required this.locationName,
+    required this.latitude,
+    required this.longitude,
     required this.scheduledStartAt,
     required this.scheduledEndAt,
   });
@@ -190,6 +192,8 @@ class WorkspaceJobRecord {
   final String priority;
   final String locationId;
   final String locationName;
+  final double latitude;
+  final double longitude;
   final DateTime scheduledStartAt;
   final DateTime scheduledEndAt;
 
@@ -202,6 +206,8 @@ class WorkspaceJobRecord {
       priority: json['priority'] as String? ?? 'medium',
       locationId: json['location_id'] as String? ?? '',
       locationName: json['location_name'] as String? ?? 'Unknown location',
+      latitude: (json['latitude'] as num?)?.toDouble() ?? 0,
+      longitude: (json['longitude'] as num?)?.toDouble() ?? 0,
       scheduledStartAt: DateTime.parse(json['scheduled_start_at'] as String),
       scheduledEndAt: DateTime.parse(json['scheduled_end_at'] as String),
     );

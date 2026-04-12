@@ -1,6 +1,7 @@
 import type {
   CreateJobInput,
   JobStatusInput,
+  WorkerJobActionInput,
 } from "../schemas/jobSchemas";
 import type { AppRole } from "../domain/auth";
 import { NotFoundError } from "../utils/errors";
@@ -26,10 +27,14 @@ type JobRecord = {
     | {
         id: string;
         name: string;
+        latitude: number;
+        longitude: number;
       }
     | Array<{
         id: string;
         name: string;
+        latitude: number;
+        longitude: number;
       }>
     | null;
 };
@@ -39,6 +44,8 @@ type JobResponse = {
   organization_id: string;
   location_id: string;
   location_name: string | null;
+  latitude: number | null;
+  longitude: number | null;
   title: string;
   description: string | null;
   status: string;
@@ -55,6 +62,15 @@ type JobListOptions = {
   requesterId: string;
   requesterRole: AppRole;
   workerId?: string;
+};
+
+type WorkerAccessibleJobRecord = JobRecord & {
+  job_assignments:
+    | Array<{
+        worker_profile_id: string;
+        assignment_status: string;
+      }>
+    | null;
 };
 
 async function getAssignedJobIds(workerId: string, organizationId: string) {
@@ -95,7 +111,9 @@ export async function createJob(options: {
         *,
         locations(
           id,
-          name
+          name,
+          latitude,
+          longitude
         )
       `,
     )
@@ -116,7 +134,9 @@ export async function listJobs(options: JobListOptions) {
         *,
         locations(
           id,
-          name
+          name,
+          latitude,
+          longitude
         )
       `,
     )
@@ -163,7 +183,9 @@ export async function getJobById(options: {
         *,
         locations(
           id,
-          name
+          name,
+          latitude,
+          longitude
         )
       `,
     )
@@ -187,6 +209,126 @@ export async function updateJobStatus(options: {
   jobId: string;
   status: JobStatusInput["status"];
 }) {
+  const data = await updateJobRecordStatus({
+    organizationId: options.organizationId,
+    jobId: options.jobId,
+    status: options.status,
+  });
+
+  return mapJobRecord(data);
+}
+
+export async function performWorkerJobAction(options: {
+  organizationId: string;
+  workerId: string;
+  jobId: string;
+  input: WorkerJobActionInput;
+}) {
+  await getWorkerAccessibleJob(options);
+
+  if (options.input.action === "start") {
+    const job = await updateJobRecordStatus({
+      organizationId: options.organizationId,
+      jobId: options.jobId,
+      status: "in_progress",
+    });
+
+    await insertLocationEvent({
+      organizationId: options.organizationId,
+      jobId: options.jobId,
+      locationId: job.location_id,
+      workerId: options.workerId,
+      eventType: "job_started",
+      metadata: buildWorkerActionMetadata(options.input),
+    });
+
+    return mapJobRecord(job);
+  }
+
+  if (options.input.action === "complete") {
+    const job = await updateJobRecordStatus({
+      organizationId: options.organizationId,
+      jobId: options.jobId,
+      status: "completed",
+    });
+
+    await insertLocationEvent({
+      organizationId: options.organizationId,
+      jobId: options.jobId,
+      locationId: job.location_id,
+      workerId: options.workerId,
+      eventType: "job_completed",
+      metadata: buildWorkerActionMetadata(options.input),
+    });
+
+    return mapJobRecord(job);
+  }
+
+  const job = await updateJobRecordStatus({
+    organizationId: options.organizationId,
+    jobId: options.jobId,
+    status: "cancelled",
+  });
+
+  await insertLocationEvent({
+    organizationId: options.organizationId,
+    jobId: options.jobId,
+    locationId: job.location_id,
+    workerId: options.workerId,
+    eventType: "job_completed",
+    metadata: {
+      ...buildWorkerActionMetadata(options.input),
+      outcome: "unable_to_complete",
+    },
+  });
+
+  return mapJobRecord(job);
+}
+
+async function getWorkerAccessibleJob(options: {
+  organizationId: string;
+  workerId: string;
+  jobId: string;
+}) {
+  const { data, error } = await supabaseAdmin
+    .from("jobs")
+    .select(
+      `
+        *,
+        locations(
+          id,
+          name,
+          latitude,
+          longitude
+        ),
+        job_assignments(
+          worker_profile_id,
+          assignment_status
+        )
+      `,
+    )
+    .eq("organization_id", options.organizationId)
+    .eq("id", options.jobId)
+    .eq("job_assignments.worker_profile_id", options.workerId)
+    .in("job_assignments.assignment_status", [...ACTIVE_ASSIGNMENT_STATUSES])
+    .single<WorkerAccessibleJobRecord>();
+
+  if (error) {
+    handleSupabaseError(error, "Failed to fetch worker job.");
+  }
+
+  if (!data) {
+    throw new NotFoundError("Job not found.");
+  }
+
+  return data;
+}
+
+async function updateJobRecordStatus(options: {
+  organizationId: string;
+  jobId: string;
+  status: JobStatusInput["status"];
+}) {
   const { data, error } = await supabaseAdmin
     .from("jobs")
     .update({ status: options.status })
@@ -197,7 +339,9 @@ export async function updateJobStatus(options: {
         *,
         locations(
           id,
-          name
+          name,
+          latitude,
+          longitude
         )
       `,
     )
@@ -211,7 +355,49 @@ export async function updateJobStatus(options: {
     throw new NotFoundError("Job not found.");
   }
 
-  return mapJobRecord(data);
+  return data;
+}
+
+async function insertLocationEvent(options: {
+  organizationId: string;
+  jobId: string;
+  locationId: string;
+  workerId: string;
+  eventType: "job_started" | "job_completed";
+  metadata: Record<string, string>;
+}) {
+  const { error } = await supabaseAdmin.from("location_events").insert({
+    organization_id: options.organizationId,
+    job_id: options.jobId,
+    location_id: options.locationId,
+    worker_profile_id: options.workerId,
+    event_type: options.eventType,
+    event_timestamp: new Date().toISOString(),
+    metadata: options.metadata,
+  });
+
+  if (error) {
+    handleSupabaseError(error, "Failed to record worker job event.");
+  }
+}
+
+function buildWorkerActionMetadata(
+  input: WorkerJobActionInput,
+): Record<string, string> {
+  const metadata: Record<string, string> = {
+    source: "worker_mobile",
+    action: input.action,
+  };
+
+  if (input.notes) {
+    metadata.notes = input.notes;
+  }
+
+  if (input.reason) {
+    metadata.reason = input.reason;
+  }
+
+  return metadata;
 }
 
 function mapJobRecord(record: JobRecord): JobResponse {
@@ -224,6 +410,8 @@ function mapJobRecord(record: JobRecord): JobResponse {
     organization_id: record.organization_id,
     location_id: record.location_id,
     location_name: location?.name ?? null,
+    latitude: location?.latitude ?? null,
+    longitude: location?.longitude ?? null,
     title: record.title,
     description: record.description,
     status: record.status,
