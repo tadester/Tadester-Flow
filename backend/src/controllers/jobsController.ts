@@ -1,10 +1,15 @@
 import type { Request, Response } from "express";
 
-import type { CreateJobInput, JobStatusInput } from "../schemas/jobSchemas";
+import type {
+  CreateJobInput,
+  JobStatusInput,
+  WorkerJobActionInput,
+} from "../schemas/jobSchemas";
 import {
   createJob,
   getJobById,
   listJobs,
+  performWorkerJobAction,
   updateJobStatus,
 } from "../services/jobService";
 import {
@@ -75,6 +80,23 @@ export async function updateJobStatusController(
     organizationId: user.organizationId,
     jobId: getParamValue(request.params.id, "job id"),
     status,
+  });
+
+  response.status(200).json({ data: job });
+}
+
+export async function workerJobActionController(
+  request: Request,
+  response: Response,
+) {
+  const user = getAuthenticatedUser(request);
+  const payload = getValidatedBody<WorkerJobActionInput>(request);
+
+  const job = await performWorkerJobAction({
+    organizationId: user.organizationId,
+    workerId: user.id,
+    jobId: getParamValue(request.params.id, "job id"),
+    input: payload,
   });
 
   response.status(200).json({ data: job });

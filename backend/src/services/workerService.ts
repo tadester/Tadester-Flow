@@ -11,7 +11,7 @@ type WorkerStatusOptions = {
 };
 
 const ACTIVE_ASSIGNMENT_STATUSES = ["assigned", "accepted"] as const;
-const ACTIVE_PING_WINDOW_MS = 15 * 60 * 1000;
+const ACTIVE_PING_WINDOW_MS = 10 * 60 * 1000;
 
 export async function getWorkerStatus(options: WorkerStatusOptions) {
   if (

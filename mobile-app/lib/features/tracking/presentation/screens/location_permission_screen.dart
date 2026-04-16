@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -48,8 +49,7 @@ class _LocationPermissionScreenState
       }
 
       setState(() {
-        _errorMessage =
-            'Unable to read location permission state right now.';
+        _errorMessage = 'Unable to read location permission state right now.';
       });
     }
   }
@@ -193,7 +193,10 @@ class _LocationPermissionScreenState
         _permissionState ?? LocationPermissionState.denied;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Location Access')),
+      appBar: AppBar(
+        automaticallyImplyLeading: Navigator.of(context).canPop(),
+        title: const Text('Location Access'),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -231,6 +234,17 @@ class _LocationPermissionScreenState
                 trackingStatusAsync: trackingStatusAsync,
                 latestLocationAsync: latestLocationAsync,
               ),
+              const SizedBox(height: 12),
+              if (defaultTargetPlatform == TargetPlatform.iOS)
+                Card(
+                  color: const Color(0xFFFFF8E1),
+                  child: const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text(
+                      'On iPhone, Open app settings takes you to the Tadester Ops settings page. Apple does not allow apps to jump straight into the Location sub-page, so tap Location there to finish enabling tracking.',
+                    ),
+                  ),
+                ),
               const SizedBox(height: 24),
               Wrap(
                 spacing: 12,

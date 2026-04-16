@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+import '../../../../../core/services/google_directions_service.dart';
 import '../../../tracking/domain/models/location_data.dart';
 import '../../domain/models/workspace_models.dart';
 
@@ -11,10 +12,12 @@ class WorkerRouteMap extends StatefulWidget {
     super.key,
     required this.route,
     required this.currentLocation,
+    this.directions,
   });
 
   final WorkerRouteSummary route;
   final LocationData? currentLocation;
+  final RouteDirectionsData? directions;
 
   @override
   State<WorkerRouteMap> createState() => _WorkerRouteMapState();
@@ -28,16 +31,18 @@ class _WorkerRouteMapState extends State<WorkerRouteMap> {
   void didUpdateWidget(covariant WorkerRouteMap oldWidget) {
     super.didUpdateWidget(oldWidget);
     final bool locationChanged =
-        oldWidget.currentLocation?.timestamp !=
-        widget.currentLocation?.timestamp;
+        oldWidget.currentLocation?.timestamp != widget.currentLocation?.timestamp;
     final bool stopCountChanged =
         oldWidget.route.orderedJobs.length != widget.route.orderedJobs.length;
+    final bool directionsChanged =
+        oldWidget.directions?.polylinePoints.length !=
+        widget.directions?.polylinePoints.length;
 
     if (_mapController == null) {
       return;
     }
 
-    if (!_hasFittedInitialBounds || stopCountChanged) {
+    if (!_hasFittedInitialBounds || stopCountChanged || directionsChanged) {
       unawaited(_fitToRoute());
       return;
     }
@@ -59,9 +64,9 @@ class _WorkerRouteMapState extends State<WorkerRouteMap> {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(28),
       child: SizedBox(
-        height: 320,
+        height: 400,
         child: Stack(
           children: <Widget>[
             GoogleMap(
@@ -74,6 +79,7 @@ class _WorkerRouteMapState extends State<WorkerRouteMap> {
               compassEnabled: true,
               mapToolbarEnabled: false,
               zoomControlsEnabled: false,
+              padding: const EdgeInsets.fromLTRB(0, 24, 0, 96),
               onMapCreated: (GoogleMapController controller) {
                 _mapController = controller;
                 unawaited(_fitToRoute());
@@ -82,8 +88,18 @@ class _WorkerRouteMapState extends State<WorkerRouteMap> {
               polylines: _polylines,
             ),
             Positioned(
-              top: 12,
-              right: 12,
+              top: 16,
+              left: 16,
+              child: _MapCallout(
+                icon: Icons.location_searching,
+                label: widget.currentLocation == null
+                    ? 'Waiting for live GPS'
+                    : 'Live location on map',
+              ),
+            ),
+            Positioned(
+              top: 16,
+              right: 16,
               child: FloatingActionButton.small(
                 heroTag: 'worker-route-recenter',
                 onPressed: _fitToRoute,
@@ -152,16 +168,21 @@ class _WorkerRouteMapState extends State<WorkerRouteMap> {
   }
 
   Set<Polyline> get _polylines {
-    final List<LatLng> points = <LatLng>[
-      if (widget.currentLocation != null)
-        LatLng(
-          widget.currentLocation!.latitude,
-          widget.currentLocation!.longitude,
-        ),
-      ...widget.route.orderedJobs.map(
-        (WorkerRouteStop stop) => LatLng(stop.latitude, stop.longitude),
-      ),
-    ];
+    final List<LatLng> points = widget.directions?.polylinePoints
+            .map(
+              (RouteCoordinate point) => LatLng(point.latitude, point.longitude),
+            )
+            .toList(growable: false) ??
+        <LatLng>[
+          if (widget.currentLocation != null)
+            LatLng(
+              widget.currentLocation!.latitude,
+              widget.currentLocation!.longitude,
+            ),
+          ...widget.route.orderedJobs.map(
+            (WorkerRouteStop stop) => LatLng(stop.latitude, stop.longitude),
+          ),
+        ];
 
     if (points.length < 2) {
       return <Polyline>{};
@@ -170,7 +191,7 @@ class _WorkerRouteMapState extends State<WorkerRouteMap> {
     return <Polyline>{
       Polyline(
         polylineId: const PolylineId('worker-route-line'),
-        width: 5,
+        width: 6,
         color: const Color(0xFFE53935),
         points: points,
       ),
@@ -209,17 +230,17 @@ class _WorkerRouteMapState extends State<WorkerRouteMap> {
     }
 
     final double minLat = points
-        .map((point) => point.latitude)
-        .reduce((a, b) => a < b ? a : b);
+        .map((LatLng point) => point.latitude)
+        .reduce((double a, double b) => a < b ? a : b);
     final double maxLat = points
-        .map((point) => point.latitude)
-        .reduce((a, b) => a > b ? a : b);
+        .map((LatLng point) => point.latitude)
+        .reduce((double a, double b) => a > b ? a : b);
     final double minLng = points
-        .map((point) => point.longitude)
-        .reduce((a, b) => a < b ? a : b);
+        .map((LatLng point) => point.longitude)
+        .reduce((double a, double b) => a < b ? a : b);
     final double maxLng = points
-        .map((point) => point.longitude)
-        .reduce((a, b) => a > b ? a : b);
+        .map((LatLng point) => point.longitude)
+        .reduce((double a, double b) => a > b ? a : b);
 
     await controller.animateCamera(
       CameraUpdate.newLatLngBounds(
@@ -231,5 +252,35 @@ class _WorkerRouteMapState extends State<WorkerRouteMap> {
       ),
     );
     _hasFittedInitialBounds = true;
+  }
+}
+
+class _MapCallout extends StatelessWidget {
+  const _MapCallout({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.95),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(
+          children: <Widget>[
+            Icon(icon, size: 16, color: const Color(0xFFE53935)),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

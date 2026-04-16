@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../../core/routing/app_router.dart';
+import '../../../../auth/presentation/providers/auth_state_provider.dart';
 import '../../providers/workspace_providers.dart';
 import '../../widgets/management_shell.dart';
 
@@ -65,6 +68,26 @@ class ManagementSettingsScreen extends ConsumerWidget {
                     Text('Role: ${workspace.profile.role}'),
                     Text('Status: ${workspace.profile.status}'),
                   ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      await ref.read(authRepositoryProvider).signOut();
+                      invalidateWorkspaceData(ref);
+                      if (context.mounted) {
+                        context.goNamed(AppRoute.login.nameValue);
+                      }
+                    },
+                    icon: const Icon(Icons.logout),
+                    label: const Text('Log out'),
+                  ),
                 ),
               ),
             ),

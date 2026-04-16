@@ -173,6 +173,26 @@ class WorkspaceRepository {
     await _apiClient.postJson('/api/assignments', body: input.toJson());
   }
 
+  Future<WorkspaceJobRecord> runWorkerJobAction({
+    required String jobId,
+    required String action,
+    String? notes,
+    String? reason,
+  }) async {
+    final Map<String, dynamic> response = await _apiClient.postJson(
+      '/api/jobs/$jobId/worker-action',
+      body: <String, dynamic>{
+        'action': action,
+        if (notes != null && notes.trim().isNotEmpty) 'notes': notes.trim(),
+        if (reason != null && reason.trim().isNotEmpty) 'reason': reason.trim(),
+      },
+    );
+
+    return WorkspaceJobRecord.fromJson(
+      response['data'] as Map<String, dynamic>? ?? <String, dynamic>{},
+    );
+  }
+
   Future<AutoAssignRunResult> autoAssignJobs({String? jobId}) async {
     final Map<String, dynamic> response = await _apiClient.postJson(
       '/api/assignments/auto',

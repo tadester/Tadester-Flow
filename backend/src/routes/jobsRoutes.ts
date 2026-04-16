@@ -5,10 +5,15 @@ import {
   getJobDetailsController,
   listJobsController,
   updateJobStatusController,
+  workerJobActionController,
 } from "../controllers/jobsController";
 import { requireRole } from "../middleware/requireRole";
 import { validateBody } from "../middleware/validate";
-import { createJobSchema, jobStatusSchema } from "../schemas/jobSchemas";
+import {
+  createJobSchema,
+  jobStatusSchema,
+  workerJobActionSchema,
+} from "../schemas/jobSchemas";
 import { asyncHandler } from "../utils/asyncHandler";
 
 const router = Router();
@@ -34,6 +39,12 @@ router.patch(
   requireRole(["admin", "dispatcher", "operator"]),
   validateBody(jobStatusSchema),
   asyncHandler(updateJobStatusController),
+);
+router.post(
+  "/:id/worker-action",
+  requireRole(["field_worker"]),
+  validateBody(workerJobActionSchema),
+  asyncHandler(workerJobActionController),
 );
 
 export { router as jobsRouter };

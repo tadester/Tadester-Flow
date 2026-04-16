@@ -19,6 +19,23 @@ export const jobStatusSchema = z.object({
   status: z.enum(["draft", "scheduled", "in_progress", "completed", "cancelled"]),
 });
 
+export const workerJobActionSchema = z
+  .object({
+    action: z.enum(["start", "complete", "unable"]),
+    notes: z.string().trim().max(1000).optional(),
+    reason: z.string().trim().max(1000).optional(),
+  })
+  .superRefine((payload, context) => {
+    if (payload.action === "unable" && !payload.reason) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["reason"],
+        message: "A reason is required when a job could not be completed.",
+      });
+    }
+  });
+
 export type CreateJobInput = z.infer<typeof createJobSchema>;
 export type UpdateJobInput = z.infer<typeof updateJobSchema>;
 export type JobStatusInput = z.infer<typeof jobStatusSchema>;
+export type WorkerJobActionInput = z.infer<typeof workerJobActionSchema>;
