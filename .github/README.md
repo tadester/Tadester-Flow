@@ -151,5 +151,5 @@ https://tadester-ops.netlify.app/
 
 ## 📸 Screenshots
 ### Mobile App
-![](../assets/screenshots/mobile.png)
+![](../assets/screenshots/mobile.png)  | ![](../assets/screenshots/mobile2.png)
 
